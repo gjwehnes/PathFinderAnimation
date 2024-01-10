@@ -36,6 +36,7 @@ public class PathFinderFrame extends AnimationFrame{
 	ArrayList<CityNode> currentPath = new ArrayList<CityNode>();
 	Thread calculationThread = null;	
 	State state = State.READY;
+	PathFinder pathfinder = new PathFinder();
 	
 	public PathFinderFrame(Animation animation) {
 		
@@ -71,24 +72,20 @@ public class PathFinderFrame extends AnimationFrame{
 	protected void paintAnimationPanel(Graphics g) {
 		
 		
-		for (DisplayableSprite sprite: universe.getSprites()) {
-			if (sprite instanceof CityNode) {
-				CityNode city = (CityNode)sprite;
-				int size = (int)( Math.max(2, Math.log(city.population / 100000) / Math.log(2)) * scale);
-				g.setColor(Color.RED);
-				g.fillOval(translateToScreenX(city.getCenterX()) - size / 2, translateToScreenY(city.getCenterY()) - size / 2, (int)(size), (int)(size));				
-				Graphics2D g2 = (Graphics2D) g;
-				g.setColor(Color.WHITE);
-			    g2.drawString(city.name, translateToScreenX(city.getCenterX()) + 8, translateToScreenY(city.getCenterY()));
+		for (CityNode sprite: pathfinder.getNodes()) {
+			CityNode city = (CityNode)sprite;
+			int size = (int)( Math.max(2, Math.log(city.population / 100000) / Math.log(2)) * scale);
+			g.setColor(Color.RED);
+			g.fillOval(translateToScreenX(city.getCenterX()) - size / 2, translateToScreenY(city.getCenterY()) - size / 2, (int)(size), (int)(size));				
+			Graphics2D g2 = (Graphics2D) g;
+			g.setColor(Color.WHITE);
+		    g2.drawString(city.name, translateToScreenX(city.getCenterX()) + 8, translateToScreenY(city.getCenterY()));
 
-				g.setColor(Color.GRAY);
-			    g2.setStroke(new BasicStroke(2));				
-				for (CityNode neighbour: city.neighbourNodes) {
-				    g2.drawLine(translateToScreenX(city.getCenterX()), translateToScreenY(city.getCenterY()), translateToScreenX(neighbour.getCenterX()), translateToScreenY(neighbour.getCenterY()));
-					
-				}
-
-			    
+			g.setColor(Color.GRAY);
+		    g2.setStroke(new BasicStroke(2));				
+			for (CityNode neighbour: city.neighbourNodes) {
+			    g2.drawLine(translateToScreenX(city.getCenterX()), translateToScreenY(city.getCenterY()), translateToScreenX(neighbour.getCenterX()), translateToScreenY(neighbour.getCenterY()));
+				
 			}
         	
         }
@@ -119,19 +116,16 @@ public class PathFinderFrame extends AnimationFrame{
 		current = null;
 		double minDistanceSquared = Double.MAX_VALUE;
 
-		PathFinderUniverse pathfinder = (PathFinderUniverse) universe;
 		
 		//find the closes node to the mouse pointer
-		for (DisplayableSprite sprite: universe.getSprites()) {
-			if (sprite instanceof CityNode) {
-				double distanceX = sprite.getCenterX() - MouseInput.logicalX;
-				double distanceY = sprite.getCenterY() - MouseInput.logicalY;
-				double distanceSquared = distanceX * distanceX + distanceY * distanceY;
-				
-				if (distanceSquared < minDistanceSquared) {
-					current = (CityNode) sprite;
-					minDistanceSquared = distanceSquared;
-				}
+		for (CityNode sprite: pathfinder.getNodes()) {
+			double distanceX = sprite.getCenterX() - MouseInput.logicalX;
+			double distanceY = sprite.getCenterY() - MouseInput.logicalY;
+			double distanceSquared = distanceX * distanceX + distanceY * distanceY;
+			
+			if (distanceSquared < minDistanceSquared) {
+				current = (CityNode) sprite;
+				minDistanceSquared = distanceSquared;
 			}
 		}
 
@@ -196,7 +190,6 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 	
 	private void setSolutionText() {
-		PathFinderUniverse pathfinder = (PathFinderUniverse) universe;
 
 		if (currentPath.size() == 0) {
 			this.lblBottom.setText(String.format("SOLUTION %s to %s not found", 
@@ -251,8 +244,6 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void findPath(CityNode start, CityNode end) {
 
-		PathFinderUniverse pathfinder = (PathFinderUniverse) universe;
-
 		calculationThread = new Thread()
 		{
 			public void run()
@@ -284,7 +275,7 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 
 	protected void this_windowClosing(WindowEvent e) {
-		((PathFinderUniverse) universe).abort();
+		pathfinder.abort();
 		super.this_windowClosing(e);
 	}
 	
