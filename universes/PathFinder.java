@@ -9,28 +9,29 @@ import java.util.Arrays;
 
 public class PathFinder {
 		
-	CityNode origin;
-	CityNode destination;
-	protected ArrayList<CityNode> cities = new ArrayList<CityNode>();
+	private CityNode origin;
+	private CityNode destination;
+	private ArrayList<CityNode> cities = new ArrayList<CityNode>();
 	protected ArrayList<CityNode> path = new ArrayList<CityNode>();
 
-	final long STEP_DELAY_MS = 0;
-	final boolean VERBOSE = false;	
+	private final long STEP_DELAY_MS = 0;
+	private final boolean VERBOSE = false;
 
-	final int MAP_WIDTH = 1000;
-	final int MAP_HEIGHT = 750;
-	final double MAP_NORTH_LATITUDE = 59.6;
-	final double MAP_SOUTH_LATITUDE = 35.5;
-	final double MAP_EAST_LONGITUDE = 33.75;
-	final double MAP_WEST_LONGITUDE = -15.5;
-	final double KM_PER_DEGREE_LATITUDE = 110;
+	double KM_PER_DEGREE_LATITUDE = 110;
+	
+	private double northLatitude;
+	private double southLatitude;
+	private double eastLongitude;
+	private double westLongitude;
 	
 	//minimal # of nodes
-	final double MIN_POPULATION = 5000000;
-	final boolean INCLUDE_CAPITALS = true;
-	final int MAX_DISTANCE_BETWEEN_CITIES_KM = 5000;
-	final double MAX_DISTANCE_OF_PATH = 2000;
-	final double MAX_NEIGHBOURS = 4;
+	private double minPopulation = 5000000;
+	private boolean includeCapitals = true;
+	private double maxDistanceBetweenNeighbours = 5000;
+	private int maxNeighbours = 4;
+
+	private int mapWidth;
+	private int mapHeight;
 	
 	//large # of nodes
 //	final double MIN_POPULATION = 200000;
@@ -39,15 +40,34 @@ public class PathFinder {
 //	double MAX_DISTANCE_OF_PATH = 2000;
 //	double MAX_NEIGHBOURS = 4;
 	
-	final double MAP_PIXELS_PER_DEGREE_LATITUDE = Math.abs(MAP_HEIGHT / (MAP_NORTH_LATITUDE - MAP_SOUTH_LATITUDE));
-	final double MAP_PIXELS_PER_DEGREE_LONGITUDE = Math.abs(MAP_WIDTH / (MAP_WEST_LONGITUDE - MAP_EAST_LONGITUDE));
+	double unitsPerDegreeLatitude = Math.abs(mapHeight / (northLatitude - southLatitude));
+	double unitsPerDegreeLongitude = Math.abs(mapWidth / (westLongitude - eastLongitude));
 
 	protected long steps = 0;
 	private long current_time = 0;
 	private boolean abort = false;
 	private boolean calculating = false;
 	
-	public PathFinder() {
+	public PathFinder(double northLatitude, double southLatitude, double eastLongitude, double westLongitude, 
+						double minPopulation, boolean includeCapitals, double maxDistanceBetweenNeighbours, int maxNeighbours,
+						int mapWidth, int mapHeight) {
+		
+		this.northLatitude = northLatitude;
+		this.southLatitude = southLatitude;		
+		this.eastLongitude = eastLongitude;
+		this.westLongitude = westLongitude;
+		
+		this.minPopulation = minPopulation;
+		this.includeCapitals = includeCapitals;
+		this.maxDistanceBetweenNeighbours = maxDistanceBetweenNeighbours;
+		this.maxNeighbours = maxNeighbours;
+		
+		this.mapWidth = mapWidth;
+		this.mapHeight = mapHeight;
+
+		unitsPerDegreeLatitude = Math.abs(mapHeight / (northLatitude - southLatitude));
+		unitsPerDegreeLongitude = Math.abs(mapWidth / (westLongitude - eastLongitude));
+		
 		buildGraph();		
 	}
 	
@@ -222,17 +242,10 @@ public class PathFinder {
 
 		if (abort) {
 			return false;
-		}else if (current.neighbourNodes.contains(goal)) {			
-			//base case
-			double distanceToGoal = findDistance(current, goal);
-			if (distanceOfCurrentPath + distanceToGoal <= MAX_DISTANCE_OF_PATH) {
-				currentPath.add(goal);
-				System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
-				return true;
-			}
-			else {
-				return false;
-			}
+		}else if (current == goal) {			
+			currentPath.add(goal);
+			System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
+			return true;
 		}
 		else {		
 			for (CityNode neighbour : current.neighbourNodes) {
@@ -243,11 +256,9 @@ public class PathFinder {
 				double distanceFromCurrent = findDistance(current, goal);
 				//how far from current to neighbour?
 				double distanceToNeighbour = findDistance(current, neighbour);
-				//have we visited this city yet?
-				boolean haveDistanceRemaining = (distanceOfCurrentPath + distanceToNeighbour) <= MAX_DISTANCE_OF_PATH;
 				//neighbour is actually closer to goal?
 				boolean closerToGoal = distanceFromNeigbour < distanceFromCurrent;
-				if (haveNotVisited && haveDistanceRemaining && closerToGoal) {
+				if (haveNotVisited && closerToGoal) {
 					currentPath.add(neighbour);
 					boolean solved = findAPath2(neighbour, goal, currentPath);
 					if (solved) {
@@ -287,11 +298,11 @@ public class PathFinder {
 					boolean isCapital = fields[8].equals("primary");
 					
 					
-					if (latitude >= MAP_SOUTH_LATITUDE && 
-							latitude <= MAP_NORTH_LATITUDE &&
-							longitude >= MAP_WEST_LONGITUDE &&
-							longitude <= MAP_EAST_LONGITUDE &&						
-							((population >= MIN_POPULATION) || (isCapital && INCLUDE_CAPITALS))) {
+					if (latitude >= southLatitude && 
+							latitude <= northLatitude &&
+							longitude >= westLongitude &&
+							longitude <= eastLongitude &&						
+							((population >= minPopulation) || (isCapital && includeCapitals))) {
 						CityNode city = new CityNode();
 						city.name = fields[1];
 						city.latitude = latitude;
@@ -312,8 +323,8 @@ public class PathFinder {
 		}
 		
 
-		double unitsPerDegreeLatitude = translateLatitudeToLogicalY(MAP_SOUTH_LATITUDE) - translateLatitudeToLogicalY(MAP_SOUTH_LATITUDE + 1);
-		double maxDistance = (unitsPerDegreeLatitude) * (MAX_DISTANCE_BETWEEN_CITIES_KM / KM_PER_DEGREE_LATITUDE);
+		double unitsPerDegreeLatitude = translateLatitudeToLogicalY(southLatitude) - translateLatitudeToLogicalY(southLatitude + 1);
+		double maxDistance = (unitsPerDegreeLatitude) * (maxDistanceBetweenNeighbours / KM_PER_DEGREE_LATITUDE);
 
 		//add all neighbours within range
 		for (int indexFrom = 0; indexFrom < cities.size(); indexFrom++) {
@@ -330,7 +341,7 @@ public class PathFinder {
 				}
 			}
 			//reduce the number of neighbours to a maximum
-			while (from.neighbourNodes.size() > MAX_NEIGHBOURS) {
+			while (from.neighbourNodes.size() > maxNeighbours) {
 				double furthestDistance = 0;
 				int indexTarget = 0;
 				for (int i = 0; i < from.neighbourDistances.size(); i++) {
@@ -443,19 +454,19 @@ public class PathFinder {
 	}
 
 	public double getNorthLatitude() {
-		return MAP_NORTH_LATITUDE;
+		return northLatitude;
 	}
 
 	public double getSouthLatitude() {
-		return MAP_SOUTH_LATITUDE;
+		return southLatitude;
 	}
 
 	public double getEastLongitude() {
-		return MAP_EAST_LONGITUDE;
+		return eastLongitude;
 	}
 
 	public double getWestLongitude() {
-		return MAP_WEST_LONGITUDE;
+		return westLongitude;
 	}
 
 	public int getMapWidth() {
@@ -474,7 +485,7 @@ public class PathFinder {
 	
 	private double translateLongitudeToLogicalX(double longitude) {
 		double offsetLongitude = longitude - this.getWestLongitude();
-		return MAP_PIXELS_PER_DEGREE_LONGITUDE * offsetLongitude;
+		return unitsPerDegreeLongitude * offsetLongitude;
 	}
 
 	private double translateLatitudeToLogicalY(double latitude) {

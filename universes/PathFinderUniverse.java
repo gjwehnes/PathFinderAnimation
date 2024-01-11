@@ -12,26 +12,41 @@ public class PathFinderUniverse implements Universe {
 	private ArrayList<Background> backgrounds = new ArrayList<Background>();
 	private final double VELOCITY = 200;
 
-	protected ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
+	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
+	private PathFinder pathfinder;
 
+	private final int MAP_WIDTH = 1000;
+	private final int MAP_HEIGHT = 750;
+	private final double MAP_NORTH_LATITUDE = 59.6;
+	private final double MAP_SOUTH_LATITUDE = 35.5;
+	private final double MAP_EAST_LONGITUDE = 33.75;
+	private final double MAP_WEST_LONGITUDE = -15.5;
 
-	final int MAP_WIDTH = 1000;
-	final int MAP_HEIGHT = 750;
-	final double MAP_NORTH_LATITUDE = 59.6;
-	final double MAP_SOUTH_LATITUDE = 35.5;
-	final double MAP_EAST_LONGITUDE = 33.75;
-	final double MAP_WEST_LONGITUDE = -15.5;
-	final double KM_PER_DEGREE_LATITUDE = 110;
-		
-	final double MAP_PIXELS_PER_DEGREE_LATITUDE = Math.abs(MAP_HEIGHT / (MAP_NORTH_LATITUDE - MAP_SOUTH_LATITUDE));
-	final double MAP_PIXELS_PER_DEGREE_LONGITUDE = Math.abs(MAP_WIDTH / (MAP_WEST_LONGITUDE - MAP_EAST_LONGITUDE));
+//  large # of nodes
+	final double MIN_POPULATION = 200000;
+	final boolean INCLUDE_CAPITALS = false;
+	final int MAX_DISTANCE_BETWEEN_CITIES_KM = 1000;
+	int MAX_NEIGHBOURS = 4;
+	
+	
+	private final double MAP_PIXELS_PER_DEGREE_LATITUDE = Math.abs(MAP_HEIGHT / (MAP_NORTH_LATITUDE - MAP_SOUTH_LATITUDE));
+	private final double MAP_PIXELS_PER_DEGREE_LONGITUDE = Math.abs(MAP_WIDTH / (MAP_WEST_LONGITUDE - MAP_EAST_LONGITUDE));
 	
 	private double centerX = MAP_WIDTH / 2;
 	private double centerY = MAP_HEIGHT / 2;
 
 	public PathFinderUniverse() {
+		pathfinder = new PathFinder(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
+				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
+				MAP_WIDTH, MAP_HEIGHT);
 		MapBackground background = new MapBackground("res/europe-map.jpg");
 		backgrounds.add(background);
+		
+		
+	}
+
+	public PathFinder getPathfinder() {
+		return pathfinder;
 	}
 	
 	public double getScale() {

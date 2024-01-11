@@ -36,7 +36,6 @@ public class PathFinderFrame extends AnimationFrame{
 	ArrayList<CityNode> currentPath = new ArrayList<CityNode>();
 	Thread calculationThread = null;	
 	State state = State.READY;
-	PathFinder pathfinder = new PathFinder();
 	
 	public PathFinderFrame(Animation animation) {
 		
@@ -71,6 +70,7 @@ public class PathFinderFrame extends AnimationFrame{
 		
 	protected void paintAnimationPanel(Graphics g) {
 		
+		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
 		
 		for (CityNode sprite: pathfinder.getNodes()) {
 			CityNode city = (CityNode)sprite;
@@ -112,10 +112,11 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 	
 	protected void updateControls() {
-				 
+		
+		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		
 		current = null;
 		double minDistanceSquared = Double.MAX_VALUE;
-
 		
 		//find the closes node to the mouse pointer
 		for (CityNode sprite: pathfinder.getNodes()) {
@@ -191,6 +192,8 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	private void setSolutionText() {
 
+		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		
 		if (currentPath.size() == 0) {
 			this.lblBottom.setText(String.format("SOLUTION %s to %s not found", 
 					start != null ? start.name : "-", 
@@ -244,6 +247,8 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void findPath(CityNode start, CityNode end) {
 
+		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		
 		calculationThread = new Thread()
 		{
 			public void run()
@@ -275,6 +280,7 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 
 	protected void this_windowClosing(WindowEvent e) {
+		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
 		pathfinder.abort();
 		super.this_windowClosing(e);
 	}
