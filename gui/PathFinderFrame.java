@@ -134,7 +134,6 @@ public class PathFinderFrame extends AnimationFrame{
 		switch(state) {
 			case READY:
 				if (MouseInput.rightButtonDown) {
-					this.lblBottom.setText("");
 					this.currentPath.clear();
 				}
 				if (MouseInput.leftButtonDown) {
@@ -152,7 +151,6 @@ public class PathFinderFrame extends AnimationFrame{
 					//has the current changed?
 					if (end != current) {
 						if (pathfinder.isCalculating()) {
-							this.lblBottom.setText("");
 							pathfinder.abort();
 						}
 						else {
@@ -164,7 +162,6 @@ public class PathFinderFrame extends AnimationFrame{
 				break;
 			case CALCULATING:
 				if (pathfinder.isCalculating() == false) {
-//					setSolutionText();
 					state = State.READY;
 				}
 				else {
@@ -205,39 +202,41 @@ public class PathFinderFrame extends AnimationFrame{
 			this.lblBottom.setText("");
 		}
 		else {
-			this.lblBottom.setText(String.format("SOLUTION %s to %s (%5.3f s, %d steps)", 
-					start != null ? start.name : "-", 
-							end != null ? end.name : "-",
-									(System.currentTimeMillis() - calculationStart) / 1000.0,
-									pathfinder.getSteps()));
+			
+			if (pathfinder.isCalculating() == false) {
+				this.lblBottom.setText(String.format("SOLUTION %s to %s (%5.3f s, %d steps)", 
+						start != null ? start.name : "-", 
+								end != null ? end.name : "-",
+										(calculationTime) / 1000.0,
+										pathfinder.getSteps()));				
+			}
+			else {
+				this.lblBottom.setText("CALCULATING");
+			}
 		}
 		
 	}
 	
 	private void setPathText() {
-//		try {
-//			System.out.println(currentPath.toString());
-//		} catch (Exception e) {
-//		}
 
 		PathFinderUniverse pathfinder = (PathFinderUniverse) universe;
 		
 		switch(state) {
 			case READY:
 				this.lblTop.setText(String.format("READY %s", current != null ? current.name : "-"));
-				this.lblBottom.setText(this.lblBottom.getText());
+//				this.lblBottom.setText(this.lblBottom.getText());
 				break;
 			case DRAGGING:
 				this.lblTop.setText(String.format("DRAGGING %s to %s", start != null ? start.name : "-", current != null ? current.name : "-"));					
-				this.lblBottom.setText(this.lblBottom.getText());
+//				this.lblBottom.setText(this.lblBottom.getText());
 				break;
 			case CALCULATING:
 				this.lblTop.setText(String.format("CALCULATING %s to %s (%5.3f s)", start != null ? start.name : "-", end != null ? end.name : "-", (System.currentTimeMillis() - calculationStart) / 1000.0));
-				this.lblBottom.setText(this.lblBottom.getText());
+//				this.lblBottom.setText(this.lblBottom.getText());
 				break;
 			case ABORTING:
 				this.lblTop.setText(String.format("ABORTING!!!"));
-				this.lblBottom.setText(this.lblBottom.getText());
+//				this.lblBottom.setText(this.lblBottom.getText());
 				break;
 			default:
 				// should not happen
@@ -253,6 +252,7 @@ public class PathFinderFrame extends AnimationFrame{
 		{
 			public void run()
 			{
+				lblBottom.setText(String.format("CALCULATING"));				
 				if (pathfinder.isCalculating()) { 
 					//calculation is still running....abort
 					pathfinder.abort();
@@ -270,12 +270,11 @@ public class PathFinderFrame extends AnimationFrame{
 					currentPath = pathfinder.findAPath1(start,end, percentage);
 				}
 				calculationTime = System.currentTimeMillis() - calculationStart;
+				setSolutionText();
 			}
 		};
 	
 		calculationThread.start();
-		System.out.println("calculation done");
-		setSolutionText();
 				
 	}
 
