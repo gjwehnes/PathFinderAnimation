@@ -26,8 +26,12 @@ public class PathFinderAnimation implements Animation {
 		universeCount++;
 		
 		if (universeCount == 1) {
-			this.current = new PathFinderUniverse();
+			this.current = new EuropeMap();
 		}
+		else if (universeCount == 2) {
+			this.current = new NorthAmericaMap();
+		}
+
 		else {
 			this.current = null;
 		}

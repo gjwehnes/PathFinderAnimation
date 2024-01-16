@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class PathFinderUniverse implements Universe {
+public class NorthAmericaMap implements Universe, MapUniverse {
 		
 	private ArrayList<Background> backgrounds = new ArrayList<Background>();
 	private final double VELOCITY = 200;
@@ -15,31 +15,29 @@ public class PathFinderUniverse implements Universe {
 	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
 	private PathFinder pathfinder;
 
-	private final int MAP_WIDTH = 1000;
-	private final int MAP_HEIGHT = 750;
-	private final double MAP_NORTH_LATITUDE = 59.6;
-	private final double MAP_SOUTH_LATITUDE = 35.5;
-	private final double MAP_EAST_LONGITUDE = 33.75;
-	private final double MAP_WEST_LONGITUDE = -15.5;
-
-//  large # of nodes
-	final double MIN_POPULATION = 200000;
+	private final int MAP_WIDTH = 1348;
+	private final int MAP_HEIGHT = 726;
+	private final double MAP_NORTH_LATITUDE = 55.4;
+	private final double MAP_SOUTH_LATITUDE = 23.75;
+	private final double MAP_EAST_LONGITUDE = -52;
+	private final double MAP_WEST_LONGITUDE = -129.5;
+	final double MIN_POPULATION = 100000;
 	final boolean INCLUDE_CAPITALS = false;
-	final int MAX_DISTANCE_BETWEEN_CITIES_KM = 1000;
-	int MAX_NEIGHBOURS = 4;
-	
+	final int MAX_DISTANCE_BETWEEN_CITIES_KM = 1500;
+	int MAX_NEIGHBOURS = 5;
 	
 	private final double MAP_PIXELS_PER_DEGREE_LATITUDE = Math.abs(MAP_HEIGHT / (MAP_NORTH_LATITUDE - MAP_SOUTH_LATITUDE));
 	private final double MAP_PIXELS_PER_DEGREE_LONGITUDE = Math.abs(MAP_WIDTH / (MAP_WEST_LONGITUDE - MAP_EAST_LONGITUDE));
 	
 	private double centerX = MAP_WIDTH / 2;
 	private double centerY = MAP_HEIGHT / 2;
+	private boolean complete;
 
-	public PathFinderUniverse() {
+	public NorthAmericaMap() {
 		pathfinder = new PathFinder(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
 				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
 				MAP_WIDTH, MAP_HEIGHT);
-		MapBackground background = new MapBackground("res/europe-map.jpg");
+		MapBackground background = new MapBackground("res/na-map.jpg");
 		backgrounds.add(background);
 		
 		
@@ -50,7 +48,7 @@ public class PathFinderUniverse implements Universe {
 	}
 	
 	public double getScale() {
-		return 1.2;
+		return 0.9;
 	}
 
 	public double getXCenter() {
@@ -69,7 +67,7 @@ public class PathFinderUniverse implements Universe {
 	}
 
 	public boolean isComplete() {
-		return false;
+		return complete;
 	}
 
 	public void setComplete(boolean complete) {
@@ -115,6 +113,11 @@ public class PathFinderUniverse implements Universe {
 		//calculate new position based on velocity and time elapsed
 		this.centerX += actual_delta_time * 0.001 * velocityX;
 		this.centerY += actual_delta_time * 0.001 * velocityY;
+
+		if (keyboard.keyDownOnce(27)) {
+			complete = true;
+		}
+	
 	}
 		
 

@@ -70,7 +70,7 @@ public class PathFinderFrame extends AnimationFrame{
 		
 	protected void paintAnimationPanel(Graphics g) {
 		
-		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
 		for (CityNode sprite: pathfinder.getNodes()) {
 			CityNode city = (CityNode)sprite;
@@ -113,7 +113,7 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void updateControls() {
 		
-		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
 		current = null;
 		double minDistanceSquared = Double.MAX_VALUE;
@@ -189,7 +189,7 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	private void setSolutionText() {
 
-		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
 		if (currentPath.size() == 0) {
 			this.lblBottom.setText(String.format("SOLUTION %s to %s not found", 
@@ -218,8 +218,6 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 	
 	private void setPathText() {
-
-		PathFinderUniverse pathfinder = (PathFinderUniverse) universe;
 		
 		switch(state) {
 			case READY:
@@ -246,7 +244,7 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void findPath(CityNode start, CityNode end) {
 
-		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
 		calculationThread = new Thread()
 		{
@@ -279,7 +277,7 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 
 	protected void this_windowClosing(WindowEvent e) {
-		PathFinder pathfinder = ((PathFinderUniverse)universe).getPathfinder();
+		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		pathfinder.abort();
 		super.this_windowClosing(e);
 	}
