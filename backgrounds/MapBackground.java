@@ -92,6 +92,11 @@ public class MapBackground implements Background {
 	public void setShiftY(double shiftY) {
 		//ignore
 	}
+	
+	@Override
+	public void update(Universe universe, long actual_delta_time) {
+		//ignore
+	}
 
 }
 

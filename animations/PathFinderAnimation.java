@@ -64,7 +64,7 @@ public class PathFinderAnimation implements Animation {
 	}
 
 	@Override
-	public void update(long actual_delta_time) {
+	public void update(AnimationFrame frame, long actual_delta_time) {
 		if (KeyboardInput.getKeyboard().keyDownOnce(27)) {
 			switchUniverse(null);
 		}		
