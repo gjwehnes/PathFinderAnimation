@@ -116,11 +116,7 @@ public class EuropeMap implements Universe, MapUniverse {
 		//calculate new position based on velocity and time elapsed
 		this.centerX += actual_delta_time * 0.001 * velocityX;
 		this.centerY += actual_delta_time * 0.001 * velocityY;
-		
-		if (keyboard.keyDownOnce(27)) {
-			complete = true;
-		}
-		
+				
 	}
 		
 

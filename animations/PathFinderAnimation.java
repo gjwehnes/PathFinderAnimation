@@ -4,24 +4,15 @@ public class PathFinderAnimation implements Animation {
 	private int universeCount = 0;
 	private Universe current = null;
 	private static int score = 0;
+	private boolean animationComplete = false;
+	private boolean universeSwitched = false;
 	
-	public static int getScore() {
-		return score;
-	}
-
-	public static void setScore(int score) {
-		PathFinderAnimation.score = score;
-	}
-
-	public static void addScore(int score) {
-		PathFinderAnimation.score += score;
-	}
-
-	public int getLevel() {
-		return universeCount;
+	public PathFinderAnimation() {
+		switchUniverse(null);
+		universeSwitched = false;
 	}
 	
-	public Universe getNextUniverse() {
+	public Universe switchUniverse(Object event) {
 
 		universeCount++;
 		
@@ -34,8 +25,10 @@ public class PathFinderAnimation implements Animation {
 
 		else {
 			this.current = null;
+			this.animationComplete = true;
 		}
 		
+		universeSwitched = true;
 		return this.current;
 
 	}
@@ -48,6 +41,33 @@ public class PathFinderAnimation implements Animation {
 		universeCount = 0;
 		current = null;
 		score = 0;		
+	}
+	
+	@Override
+	public boolean getUniverseSwitched() {
+		return universeSwitched;
+	}
+
+	@Override
+	public void acknowledgeUniverseSwitched() {
+		this.universeSwitched = false;		
+	}
+
+	@Override
+	public boolean isComplete() {
+		return animationComplete;
+	}
+
+	@Override
+	public void setComplete(boolean complete) {
+		this.animationComplete = true;		
+	}
+
+	@Override
+	public void update(KeyboardInput keyboard, long actual_delta_time) {
+		if (keyboard.keyDownOnce(27)) {
+			switchUniverse(null);
+		}		
 	}
 	
 }
