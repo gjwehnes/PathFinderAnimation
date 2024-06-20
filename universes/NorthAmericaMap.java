@@ -87,26 +87,26 @@ public class NorthAmericaMap implements Universe, MapUniverse {
 	}
 
 	@Override
-	public void update(KeyboardInput keyboard, long actual_delta_time) {
+	public void update(Animation animation, long actual_delta_time) {
 		double velocityX = 0;
 		double velocityY = 0;
 		
 		//set velocity based on current state of the keyboard
 		
 		//LEFT ARROW
-		if (keyboard.keyDown(37)) {
+		if (KeyboardInput.getKeyboard().keyDown(37)) {
 			velocityX = -VELOCITY;
 		}
 		//UP ARROW
-		if (keyboard.keyDown(38)) {
+		if (KeyboardInput.getKeyboard().keyDown(38)) {
 			velocityY = -VELOCITY;			
 		}
 		//RIGHT ARROW
-		if (keyboard.keyDown(39)) {
+		if (KeyboardInput.getKeyboard().keyDown(39)) {
 			velocityX += VELOCITY;
 		}
 		// DOWN ARROW
-		if (keyboard.keyDown(40)) {
+		if (KeyboardInput.getKeyboard().keyDown(40)) {
 			velocityY += VELOCITY;			
 		}
 
