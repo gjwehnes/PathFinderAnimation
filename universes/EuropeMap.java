@@ -39,7 +39,7 @@ public class EuropeMap implements Universe, MapUniverse {
 	public EuropeMap() {
 		pathfinder = new PathFinder(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
 				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
-				MAP_WIDTH, MAP_HEIGHT);
+				MAP_WIDTH, MAP_HEIGHT, "res/world-cities.csv");
 		MapBackground background = new MapBackground("res/europe-map.jpg");
 		backgrounds.add(background);
 		

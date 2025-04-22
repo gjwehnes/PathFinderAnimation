@@ -14,7 +14,7 @@ public class PathFinder {
 	private ArrayList<CityNode> cities = new ArrayList<CityNode>();
 	protected ArrayList<CityNode> path = new ArrayList<CityNode>();
 
-	private final long STEP_DELAY_MS = 0;
+	private final long STEP_DELAY_MS = 1;
 	private final boolean VERBOSE = false;
 
 	double KM_PER_DEGREE_LATITUDE = 110;
@@ -32,7 +32,7 @@ public class PathFinder {
 
 	private int mapWidth;
 	private int mapHeight;
-	
+		
 	//large # of nodes
 //	final double MIN_POPULATION = 200000;
 //	final boolean INCLUDE_CAPITALS = false;
@@ -50,7 +50,7 @@ public class PathFinder {
 	
 	public PathFinder(double northLatitude, double southLatitude, double eastLongitude, double westLongitude, 
 						double minPopulation, boolean includeCapitals, double maxDistanceBetweenNeighbours, int maxNeighbours,
-						int mapWidth, int mapHeight) {
+						int mapWidth, int mapHeight, String mapPath) {
 		
 		this.northLatitude = northLatitude;
 		this.southLatitude = southLatitude;		
@@ -68,7 +68,7 @@ public class PathFinder {
 		unitsPerDegreeLatitude = Math.abs(mapHeight / (northLatitude - southLatitude));
 		unitsPerDegreeLongitude = Math.abs(mapWidth / (westLongitude - eastLongitude));
 		
-		buildGraph();		
+		buildGraph(mapPath);		
 	}
 	
 	public ArrayList<CityNode> getNodes() {
@@ -274,9 +274,9 @@ public class PathFinder {
 	}
 
 
-	private void buildGraph() {
+	private void buildGraph(String mapPath) {
 
-		File file = new File("res/world-cities.csv");
+		File file = new File(mapPath);
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(file));
