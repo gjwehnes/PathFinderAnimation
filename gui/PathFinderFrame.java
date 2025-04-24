@@ -74,7 +74,7 @@ public class PathFinderFrame extends AnimationFrame{
 		
 		for (CityNode sprite: pathfinder.getNodes()) {
 			CityNode city = (CityNode)sprite;
-			int size = (int)( Math.max(2, Math.log(city.population / 100000) / Math.log(2)) * scale);
+			int size = (int) (city.size * scale);
 			g.setColor(Color.RED);
 			g.fillOval(translateToScreenX(city.getCenterX()) - size / 2, translateToScreenY(city.getCenterY()) - size / 2, (int)(size), (int)(size));				
 			Graphics2D g2 = (Graphics2D) g;

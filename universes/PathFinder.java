@@ -305,9 +305,7 @@ public class PathFinder {
 							((population >= minPopulation) || (isCapital && includeCapitals))) {
 						CityNode city = new CityNode();
 						city.name = fields[1];
-						city.latitude = latitude;
-						city.longitude = longitude;
-						city.population = population;
+						city.size = (int) Math.max(2, Math.log(population / 100000) / Math.log(2));					
 						city.centerX = translateLongitudeToLogicalX(longitude);
 						city.centerY = translateLatitudeToLogicalY(latitude);
 						cities.add(city);

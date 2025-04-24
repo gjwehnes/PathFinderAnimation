@@ -4,9 +4,7 @@ import java.util.ArrayList;
 public class CityNode {
 
 		protected String name = "";
-		protected double latitude = 0;
-		protected double longitude = 0;
-		protected int population = 0;
+		protected int size = 5;
 		protected ArrayList<CityNode> neighbourNodes = new ArrayList<CityNode>();
 		protected ArrayList<Double> neighbourDistances = new ArrayList<Double>();
 
@@ -32,14 +30,11 @@ public class CityNode {
 		public CityNode() {			
 		}
 		
-		public CityNode(String name, double latitude, double longitude) {
+		public CityNode(String name) {
 			this.name = name;
-			this.latitude = latitude;
-			this.longitude = longitude;
 		}
 		
 		public String toString() {
-			//return String.format("CityNode:%s (pop: %d)", this.name, this.population);			
 			return this.name;			
 		}
 	}
