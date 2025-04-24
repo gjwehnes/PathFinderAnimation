@@ -9,10 +9,10 @@ import java.util.Arrays;
 
 public class PathFinder {
 		
-	private CityNode origin;
-	private CityNode destination;
-	private ArrayList<CityNode> cities = new ArrayList<CityNode>();
-	protected ArrayList<CityNode> path = new ArrayList<CityNode>();
+	private Node origin;
+	private Node destination;
+	private ArrayList<Node> cities = new ArrayList<Node>();
+	protected ArrayList<Node> path = new ArrayList<Node>();
 
 	private final long STEP_DELAY_MS = 1;
 	private final boolean VERBOSE = false;
@@ -71,7 +71,7 @@ public class PathFinder {
 		buildGraph(mapPath);		
 	}
 	
-	public ArrayList<CityNode> getNodes() {
+	public ArrayList<Node> getNodes() {
 		return cities;
 	}
 
@@ -87,7 +87,7 @@ public class PathFinder {
 		return this.steps;
 	}
 	
-	public ArrayList<CityNode> findAPath(CityNode start, CityNode goal) {
+	public ArrayList<Node> findAPath(Node start, Node goal) {
 
 		calculating = true;
 		steps = 0;
@@ -108,7 +108,7 @@ public class PathFinder {
 	//BRUTE FORCE ALGORITHM
 	//
 	//Will find a solution, regardless of length
-	private boolean findAPath(CityNode current, CityNode goal, ArrayList<CityNode> currentPath) {
+	private boolean findAPath(Node current, Node goal, ArrayList<Node> currentPath) {
 
 		takeStep();
 		printState(currentPath);
@@ -127,7 +127,7 @@ public class PathFinder {
 			return true;
 		}
 		else {		
-			for (CityNode neighbour : current.neighbourNodes) {
+			for (Node neighbour : current.neighbourNodes) {
 				boolean haveNotVisited =currentPath.contains(neighbour) == false;
 				if (haveNotVisited) {
 					currentPath.add(neighbour);
@@ -150,7 +150,7 @@ public class PathFinder {
 	//Track the distance used, and compare it to a maximum; don't pursue paths that will be longer
 	//This assumes that we know approximately how long the path should be!
 
-	public ArrayList<CityNode> findAPath1(CityNode start, CityNode goal, double additionalDistancePercent) {
+	public ArrayList<Node> findAPath1(Node start, Node goal, double additionalDistancePercent) {
 
 		calculating = true;
 		steps = 0;
@@ -170,7 +170,7 @@ public class PathFinder {
 		calculating = false;
 		return path;
 	}
-	private boolean findAPath1(CityNode current, CityNode goal, ArrayList<CityNode> currentPath, double distanceLeft) {
+	private boolean findAPath1(Node current, Node goal, ArrayList<Node> currentPath, double distanceLeft) {
 
 		takeStep();
 		printState(currentPath);
@@ -190,7 +190,7 @@ public class PathFinder {
 			}
 		}
 		else {
-			for (CityNode neighbour : current.neighbourNodes) {
+			for (Node neighbour : current.neighbourNodes) {
 				boolean haveNotVisited =currentPath.contains(neighbour) == false;
 				//how far from current to neighbour?
 				double distanceToNeighbour = findDistance(current,neighbour);
@@ -216,7 +216,7 @@ public class PathFinder {
 	//Track the distance used, and compare it to a maximum; don't pursue paths that will be longer
 	//This assumes that we know approximately how long the path should be, and how far from each node to the destination
 
-	public ArrayList<CityNode> findAPath2(CityNode start, CityNode goal) {
+	public ArrayList<Node> findAPath2(Node start, Node goal) {
 
 		calculating = true;
 		steps = 0;
@@ -233,7 +233,7 @@ public class PathFinder {
 		calculating = false;
 		return path;
 	}
-	private boolean findAPath2(CityNode current, CityNode goal, ArrayList<CityNode> currentPath) {
+	private boolean findAPath2(Node current, Node goal, ArrayList<Node> currentPath) {
 
 		takeStep();
 		printState(currentPath);
@@ -248,7 +248,7 @@ public class PathFinder {
 			return true;
 		}
 		else {		
-			for (CityNode neighbour : current.neighbourNodes) {
+			for (Node neighbour : current.neighbourNodes) {
 				boolean haveNotVisited =currentPath.contains(neighbour) == false;
 				//how far from neighbour to goal?
 				double distanceFromNeigbour = findDistance(neighbour, goal);
@@ -303,7 +303,7 @@ public class PathFinder {
 							longitude >= westLongitude &&
 							longitude <= eastLongitude &&						
 							((population >= minPopulation) || (isCapital && includeCapitals))) {
-						CityNode city = new CityNode();
+						Node city = new Node();
 						city.name = fields[1];
 						city.size = (int) Math.max(2, Math.log(population / 100000) / Math.log(2));					
 						city.centerX = translateLongitudeToLogicalX(longitude);
@@ -326,10 +326,10 @@ public class PathFinder {
 
 		//add all neighbours within range
 		for (int indexFrom = 0; indexFrom < cities.size(); indexFrom++) {
-			CityNode from = (CityNode) cities.get(indexFrom);
+			Node from = (Node) cities.get(indexFrom);
 			for (int indexTo = 0; indexTo < cities.size(); indexTo++) {
 				try {
-					CityNode to = (CityNode) cities.get(indexTo);
+					Node to = (Node) cities.get(indexTo);
 					double distance = findDistance(from, to);
 					if (distance > 0 && distance <= maxDistance) {
 						from.neighbourNodes.add(to);
@@ -348,7 +348,7 @@ public class PathFinder {
 						indexTarget = i;
 					}
 				}
-				CityNode to = (CityNode) cities.get(cities.indexOf(from.neighbourNodes.get(indexTarget)));
+				Node to = (Node) cities.get(cities.indexOf(from.neighbourNodes.get(indexTarget)));
 				from.neighbourNodes.remove(indexTarget);
 				from.neighbourDistances.remove(indexTarget);
 				int indexTo = to.neighbourNodes.indexOf(from);
@@ -361,9 +361,9 @@ public class PathFinder {
 		
 		//check if all links are reciprocated
 		for (int indexCurrent = 0; indexCurrent < cities.size(); indexCurrent++) {
-			CityNode current = (CityNode) cities.get(indexCurrent);
+			Node current = (Node) cities.get(indexCurrent);
 			for (int indexNeighbour = 0; indexNeighbour < current.neighbourNodes.size(); indexNeighbour++) {
-				CityNode neighbour = current.neighbourNodes.get(indexNeighbour);
+				Node neighbour = current.neighbourNodes.get(indexNeighbour);
 				if (neighbour.neighbourNodes.indexOf(current) < 0) {
 					neighbour.neighbourNodes.add(current);
 				}
@@ -373,11 +373,11 @@ public class PathFinder {
 		
 	}
 
-	private double pathLength(ArrayList<CityNode> path) {
+	private double pathLength(ArrayList<Node> path) {
 		double length = 0;
 		for (int i = 0; i < path.size() - 1; i++) {
-			CityNode city1 = path.get(i);
-			CityNode city2 = path.get(i+1);
+			Node city1 = path.get(i);
+			Node city2 = path.get(i+1);
 			length+= findDistance(city1, city2);
 		}
 		return length;
@@ -406,7 +406,7 @@ public class PathFinder {
 		this.steps++;
 	}
 	
-	private void printState(ArrayList<CityNode> currentPath) {
+	private void printState(ArrayList<Node> currentPath) {
 		if (VERBOSE) {
 			System.out.println(String.format("Step: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
 		}		
@@ -475,7 +475,7 @@ public class PathFinder {
 		return 750;
 	}
 	
-	private double findDistance(CityNode from, CityNode to) {
+	private double findDistance(Node from, Node to) {
 		double distanceX = from.getCenterX() - to.getCenterX();
 		double distanceY = from.getCenterY() - to.getCenterY();					
 		return Math.sqrt(distanceX * distanceX + distanceY * distanceY);		

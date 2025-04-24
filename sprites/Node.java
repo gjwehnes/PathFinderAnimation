@@ -1,11 +1,11 @@
 import java.awt.Image;
 import java.util.ArrayList;
 
-public class CityNode {
+public class Node {
 
 		protected String name = "";
 		protected int size = 5;
-		protected ArrayList<CityNode> neighbourNodes = new ArrayList<CityNode>();
+		protected ArrayList<Node> neighbourNodes = new ArrayList<Node>();
 		protected ArrayList<Double> neighbourDistances = new ArrayList<Double>();
 
 		public double getCenterX() {
@@ -27,10 +27,10 @@ public class CityNode {
 		protected double centerX = 0;
 		protected double centerY = 0;
 		
-		public CityNode() {			
+		public Node() {			
 		}
 		
-		public CityNode(String name) {
+		public Node(String name) {
 			this.name = name;
 		}
 		

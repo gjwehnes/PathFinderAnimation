@@ -28,12 +28,12 @@ public class PathFinderFrame extends AnimationFrame{
 	JComboBox cboStart;
 	JComboBox cboEnd;
 	JComboBox cboAlgorithm;
-	CityNode current = null;
-	CityNode start = null;
-	CityNode end = null;
+	Node current = null;
+	Node start = null;
+	Node end = null;
 	long calculationStart = 0;
 	long calculationTime = 0;
-	ArrayList<CityNode> currentPath = new ArrayList<CityNode>();
+	ArrayList<Node> currentPath = new ArrayList<Node>();
 	Thread calculationThread = null;	
 	State state = State.READY;
 	
@@ -72,8 +72,8 @@ public class PathFinderFrame extends AnimationFrame{
 		
 		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
-		for (CityNode sprite: pathfinder.getNodes()) {
-			CityNode city = (CityNode)sprite;
+		for (Node sprite: pathfinder.getNodes()) {
+			Node city = (Node)sprite;
 			int size = (int) (city.size * scale);
 			g.setColor(Color.RED);
 			g.fillOval(translateToScreenX(city.getCenterX()) - size / 2, translateToScreenY(city.getCenterY()) - size / 2, (int)(size), (int)(size));				
@@ -83,7 +83,7 @@ public class PathFinderFrame extends AnimationFrame{
 
 			g.setColor(Color.GRAY);
 		    g2.setStroke(new BasicStroke(2));				
-			for (CityNode neighbour: city.neighbourNodes) {
+			for (Node neighbour: city.neighbourNodes) {
 			    g2.drawLine(translateToScreenX(city.getCenterX()), translateToScreenY(city.getCenterY()), translateToScreenX(neighbour.getCenterX()), translateToScreenY(neighbour.getCenterY()));
 				
 			}
@@ -96,8 +96,8 @@ public class PathFinderFrame extends AnimationFrame{
 			try {
 				//this code may fail as the list may be modified asynchronously
 				for (int i = 0; i < currentPath.size() - 1; i++) {
-					CityNode cityA = currentPath.get(i);
-					CityNode cityB = currentPath.get(i+1);
+					Node cityA = currentPath.get(i);
+					Node cityB = currentPath.get(i+1);
 					
 					Graphics2D g2 = (Graphics2D) g;
 				    g2.setStroke(new BasicStroke(5));				
@@ -119,13 +119,13 @@ public class PathFinderFrame extends AnimationFrame{
 		double minDistanceSquared = Double.MAX_VALUE;
 		
 		//find the closes node to the mouse pointer
-		for (CityNode sprite: pathfinder.getNodes()) {
+		for (Node sprite: pathfinder.getNodes()) {
 			double distanceX = sprite.getCenterX() - MouseInput.logicalX;
 			double distanceY = sprite.getCenterY() - MouseInput.logicalY;
 			double distanceSquared = distanceX * distanceX + distanceY * distanceY;
 			
 			if (distanceSquared < minDistanceSquared) {
-				current = (CityNode) sprite;
+				current = (Node) sprite;
 				minDistanceSquared = distanceSquared;
 			}
 		}
@@ -242,7 +242,7 @@ public class PathFinderFrame extends AnimationFrame{
 		
 	}
 	
-	protected void findPath(CityNode start, CityNode end) {
+	protected void findPath(Node start, Node end) {
 
 		PathFinder pathfinder = ((MapUniverse)universe).getPathfinder();
 		
