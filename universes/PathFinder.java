@@ -9,8 +9,6 @@ import java.util.Arrays;
 
 public class PathFinder {
 		
-	private Node origin;
-	private Node destination;
 	private ArrayList<Node> cities = new ArrayList<Node>();
 	protected ArrayList<Node> path = new ArrayList<Node>();
 
