@@ -123,49 +123,4 @@ public class EuropeMap implements Universe, MapUniverse {
 				
 	}
 		
-
-	public double getNorthLatitude() {
-		return MAP_NORTH_LATITUDE;
-	}
-
-	public double getSouthLatitude() {
-		return MAP_SOUTH_LATITUDE;
-	}
-
-	public double getEastLongitude() {
-		return MAP_EAST_LONGITUDE;
-	}
-
-	public double getWestLongitude() {
-		return MAP_WEST_LONGITUDE;
-	}
-
-	public int getMapWidth() {
-		return 1050;
-	}
-
-	public int getMapHeight() {
-		return 750;
-	}
-	
-	private double translateLongitudeToLogicalX(double longitude) {
-		double offsetLongitude = longitude - this.getWestLongitude();
-		return MAP_PIXELS_PER_DEGREE_LONGITUDE * offsetLongitude;
-	}
-
-	private double translateLatitudeToLogicalY(double latitude) {
-		double length = WebMercator.latitudeToY(this.getNorthLatitude()) - WebMercator.latitudeToY(this.getSouthLatitude());
-		double distance = WebMercator.latitudeToY(latitude) - WebMercator.latitudeToY(this.getSouthLatitude());
-		double ratio = (distance / length);
-		double pixel = this.getMapHeight() - (distance / length) * this.getMapHeight();
-		return pixel;
-
-	}
-	
-	private double findDistance(DisplayableSprite from, DisplayableSprite to) {
-		double distanceX = from.getCenterX() - to.getCenterX();
-		double distanceY = from.getCenterY() - to.getCenterY();					
-		return Math.sqrt(distanceX * distanceX + distanceY * distanceY);		
-	}
-	
 }
