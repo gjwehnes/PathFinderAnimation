@@ -38,8 +38,7 @@ public class EuropeMap implements Universe, MapUniverse {
 
 	public EuropeMap() {
 		
-		GraphBuilder builder = new GraphBuilder();
-		ArrayList<Node> nodes = builder.buildGraph(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
+		ArrayList<Node> nodes = GraphBuilder.buildGraphFromCitiesDataset(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
 				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
 				MAP_WIDTH, MAP_HEIGHT, "res/world-cities.csv");
 		pathfinder = new Graph();

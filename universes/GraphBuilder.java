@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 public class GraphBuilder {	
 	
-	double KM_PER_DEGREE_LATITUDE = 110;
+	final static double KM_PER_DEGREE_LATITUDE = 110;
 				
-	public ArrayList<Node> buildGraph(double northLatitude, double southLatitude, double eastLongitude, double westLongitude, 
+	public static ArrayList<Node> buildGraphFromCitiesDataset(double northLatitude, double southLatitude, double eastLongitude, double westLongitude, 
 			double minPopulation, boolean includeCapitals, double maxDistanceBetweenNeighbours, int maxNeighbours,
-			int mapWidth, int mapHeight, String mapPath) {
+			int mapWidth, int mapHeight, String datasetPath) {
 
 		double unitsPerDegreeLatitude = translateLatitudeToLogicalY(southLatitude, northLatitude, southLatitude, mapHeight) - translateLatitudeToLogicalY(southLatitude + 1, northLatitude, southLatitude, mapHeight);
 		double maxDistance = (unitsPerDegreeLatitude) * (maxDistanceBetweenNeighbours / KM_PER_DEGREE_LATITUDE);
@@ -19,7 +19,7 @@ public class GraphBuilder {
 		
 		ArrayList<Node> cities = new ArrayList<Node>();
 		
-		File file = new File(mapPath);
+		File file = new File(datasetPath);
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(file));
@@ -155,12 +155,12 @@ public class GraphBuilder {
 		}		
 	}
 	
-	private double translateLongitudeToLogicalX(double longitude, double westLongitude, double unitsPerDegreeLongitude) {
+	private static double translateLongitudeToLogicalX(double longitude, double westLongitude, double unitsPerDegreeLongitude) {
 		double offsetLongitude = longitude - westLongitude;
 		return unitsPerDegreeLongitude * offsetLongitude;
 	}
 
-	private double translateLatitudeToLogicalY(double latitude, double northLatitude, double southLatitude, int mapHeight) {
+	private static double translateLatitudeToLogicalY(double latitude, double northLatitude, double southLatitude, int mapHeight) {
 		double length = WebMercator.latitudeToY(northLatitude) - WebMercator.latitudeToY(southLatitude);
 		double distance = WebMercator.latitudeToY(latitude) - WebMercator.latitudeToY(southLatitude);
 		double ratio = (distance / length);
@@ -169,7 +169,7 @@ public class GraphBuilder {
 
 	}
 	
-	private double findDistance(Node from, Node to) {
+	private static double findDistance(Node from, Node to) {
 		double distanceX = from.getCenterX() - to.getCenterX();
 		double distanceY = from.getCenterY() - to.getCenterY();					
 		return Math.sqrt(distanceX * distanceX + distanceY * distanceY);		
