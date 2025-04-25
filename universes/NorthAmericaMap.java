@@ -13,7 +13,7 @@ public class NorthAmericaMap implements Universe, MapUniverse {
 	private final double VELOCITY = 200;
 
 	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
-	private PathFinder pathfinder;
+	private Graph pathfinder;
 
 	private final int MAP_WIDTH = 1348;
 	private final int MAP_HEIGHT = 726;
@@ -34,16 +34,21 @@ public class NorthAmericaMap implements Universe, MapUniverse {
 	private boolean complete;
 
 	public NorthAmericaMap() {
-		pathfinder = new PathFinder(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
+		
+		GraphBuilder builder = new GraphBuilder();
+		ArrayList<Node> nodes = builder.buildGraph(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
 				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
 				MAP_WIDTH, MAP_HEIGHT, "res/world-cities.csv");
+		pathfinder = new Graph();
+		pathfinder.setNodes(nodes);
+
 		MapBackground background = new MapBackground("res/na-map.jpg");
 		backgrounds.add(background);
 		
 		
 	}
-
-	public PathFinder getPathfinder() {
+	
+	public Graph getPathfinder() {
 		return pathfinder;
 	}
 	
