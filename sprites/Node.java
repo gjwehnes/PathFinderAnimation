@@ -7,6 +7,15 @@ public class Node {
 		protected int size = 5;
 		protected ArrayList<Node> neighbourNodes = new ArrayList<Node>();
 		protected ArrayList<Double> neighbourDistances = new ArrayList<Double>();
+		protected double centerX = 0;
+		protected double centerY = 0;
+		
+		public Node() {			
+		}
+		
+		public Node(String name) {
+			this.name = name;
+		}
 
 		public double getCenterX() {
 			return centerX;
@@ -22,16 +31,6 @@ public class Node {
 
 		public void setCenterY(double centerY) {
 			this.centerY = centerY;
-		}
-
-		protected double centerX = 0;
-		protected double centerY = 0;
-		
-		public Node() {			
-		}
-		
-		public Node(String name) {
-			this.name = name;
 		}
 		
 		public String toString() {
