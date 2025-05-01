@@ -17,6 +17,14 @@ public class Node {
 			this.name = name;
 		}
 
+		public Node(String name, int size, double centerX, double centerY) {
+			super();
+			this.name = name;
+			this.size = size;
+			this.centerX = centerX;
+			this.centerY = centerY;
+		}
+
 		public double getCenterX() {
 			return centerX;
 		}

@@ -36,6 +36,8 @@ public class PathFinderFrame extends AnimationFrame{
 	ArrayList<Node> currentPath = new ArrayList<Node>();
 	Thread calculationThread = null;	
 	State state = State.READY;
+	Graph graph = null;
+	PathFinder pathfinder = new PathFinder();
 	
 	public PathFinderFrame(Animation animation) {
 		
@@ -64,15 +66,18 @@ public class PathFinderFrame extends AnimationFrame{
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 				}
 			}
-		});		
+		});
 		
+		graph = (Graph)universe;
+		pathfinder = new PathFinder();
+		currentPath = pathfinder.path;
 	}
 		
 	protected void paintAnimationPanel(Graphics g) {
+	
+		graph = (Graph)universe;
 		
-		Graph pathfinder = ((MapUniverse)universe).getPathfinder();
-		
-		for (Node sprite: pathfinder.getNodes()) {
+		for (Node sprite: graph.getNodes()) {
 			Node city = (Node)sprite;
 			int size = (int) (city.size * scale);
 			g.setColor(Color.RED);
@@ -112,14 +117,14 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 	
 	protected void updateControls() {
-		
-		Graph pathfinder = ((MapUniverse)universe).getPathfinder();
+
+		graph = (Graph)universe;
 		
 		current = null;
 		double minDistanceSquared = Double.MAX_VALUE;
 		
 		//find the closes node to the mouse pointer
-		for (Node sprite: pathfinder.getNodes()) {
+		for (Node sprite: graph.getNodes()) {
 			double distanceX = sprite.getCenterX() - MouseInput.logicalX;
 			double distanceY = sprite.getCenterY() - MouseInput.logicalY;
 			double distanceSquared = distanceX * distanceX + distanceY * distanceY;
@@ -188,8 +193,6 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 	
 	private void setSolutionText() {
-
-		Graph pathfinder = ((MapUniverse)universe).getPathfinder();
 		
 		if (currentPath.size() == 0) {
 			this.lblBottom.setText(String.format("SOLUTION %s to %s not found", 
@@ -244,7 +247,7 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void findPath(Node start, Node end) {
 
-		Graph pathfinder = ((MapUniverse)universe).getPathfinder();
+		pathfinder =  new PathFinder();
 		
 		calculationThread = new Thread()
 		{
@@ -277,7 +280,6 @@ public class PathFinderFrame extends AnimationFrame{
 	}
 
 	protected void this_windowClosing(WindowEvent e) {
-		Graph pathfinder = ((MapUniverse)universe).getPathfinder();
 		pathfinder.abort();
 		super.this_windowClosing(e);
 	}

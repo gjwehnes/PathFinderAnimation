@@ -7,13 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class EuropeMap implements Universe, MapUniverse {
+public class EuropeMap implements Universe, Graph {
 		
 	private ArrayList<Background> backgrounds = new ArrayList<Background>();
 	private final double VELOCITY = 200;
 
 	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
-	private Graph pathfinder;
 
 	private final int MAP_WIDTH = 1000;
 	private final int MAP_HEIGHT = 750;
@@ -36,13 +35,13 @@ public class EuropeMap implements Universe, MapUniverse {
 	private double centerY = MAP_HEIGHT / 2;
 	private boolean complete;
 
+	private ArrayList<Node> nodes = new ArrayList<Node>();
+	
 	public EuropeMap() {
 		
-		ArrayList<Node> nodes = GraphBuilder.buildGraphFromCitiesDataset(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
+		nodes = GraphBuilder.buildGraphFromCitiesDataset(MAP_NORTH_LATITUDE, MAP_SOUTH_LATITUDE,	MAP_EAST_LONGITUDE,	MAP_WEST_LONGITUDE,
 				MIN_POPULATION, INCLUDE_CAPITALS, MAX_DISTANCE_BETWEEN_CITIES_KM, MAX_NEIGHBOURS,
 				MAP_WIDTH, MAP_HEIGHT, "res/world-cities.csv");
-		pathfinder = new Graph();
-		pathfinder.setNodes(nodes);
 
 		MapBackground background = new MapBackground("res/europe-map.jpg");
 		backgrounds.add(background);
@@ -50,10 +49,13 @@ public class EuropeMap implements Universe, MapUniverse {
 		
 	}
 
-	public Graph getPathfinder() {
-		return pathfinder;
+	public ArrayList<Node> getNodes() {
+		return nodes;
 	}
-	
+	public void setNodes(ArrayList<Node> nodes) {
+		this.nodes = nodes;
+	}
+		
 	public double getScale() {
 		return 1.2;
 	}
