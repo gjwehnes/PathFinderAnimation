@@ -12,7 +12,7 @@ public class PathFinder {
 	private ArrayList<Node> nodes = new ArrayList<Node>();
 	protected ArrayList<Node> path = new ArrayList<Node>();
 
-	private final long STEP_DELAY_MS = 1;
+	private final long STEP_DELAY_MS = 0;
 	private final boolean VERBOSE = false;
 			
 	protected long steps = 0;
