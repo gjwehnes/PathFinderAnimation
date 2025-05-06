@@ -17,15 +17,18 @@ public class PathFinderAnimation implements Animation {
 		universeCount++;
 		
 		if (universeCount == 1) {
-			this.current = new RandomGraph();
+			this.current = new MazeUniverse();
 		}
 		else if (universeCount == 2) {
-			this.current = new SearchTreeVisualization();
+			this.current = new RandomGraph();
 		}
 		else if (universeCount == 3) {
-			this.current = new NorthAmericaMap();
+			this.current = new SearchTreeVisualization();
 		}
 		else if (universeCount == 4) {
+			this.current = new NorthAmericaMap();
+		}
+		else if (universeCount == 5) {
 			this.current = new EuropeMap();
 		}
 		else {
