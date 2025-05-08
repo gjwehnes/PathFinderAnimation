@@ -50,6 +50,7 @@ public class PathFinderFrame extends AnimationFrame{
 		cboAlgorithm.setBounds(480,20,192,32);
 		cboAlgorithm.addItem("Any Solution");
 		cboAlgorithm.addItem("No Regression");
+		cboAlgorithm.addItem("Prioritize Progression");		
 		cboAlgorithm.addItem("Path Length Limited 200%");
 		cboAlgorithm.addItem("Path Length Limited 180%");
 		cboAlgorithm.addItem("Path Length Limited 160%");
@@ -261,14 +262,17 @@ public class PathFinderFrame extends AnimationFrame{
 								
 				calculationStart = System.currentTimeMillis();
 				if (cboAlgorithm.getSelectedIndex() == 0) {				
-					currentPath = pathfinder.findAPath(start,end);
+					currentPath = pathfinder.findAnyPath(start,end);
 				}				
 				else if (cboAlgorithm.getSelectedIndex() == 1) {
-					currentPath = pathfinder.findAPath2(start,end);
+					currentPath = pathfinder.findAPathNoRegression(start,end);  //TEMP
 				}
-				else if (cboAlgorithm.getSelectedIndex() >= 2 && cboAlgorithm.getSelectedIndex() <= 5) {
-					int percentage = (7 - cboAlgorithm.getSelectedIndex()) * 20;
-					currentPath = pathfinder.findAPath1(start,end, percentage);
+				else if (cboAlgorithm.getSelectedIndex() == 2) {
+					currentPath = pathfinder.findAPathPrioritizeProgression(start,end);  //TEMP
+				}
+				else if (cboAlgorithm.getSelectedIndex() >= 3 && cboAlgorithm.getSelectedIndex() <= 6) {
+					int percentage = (8 - cboAlgorithm.getSelectedIndex()) * 20;
+					currentPath = pathfinder.findAPathLengthLimited(start,end, percentage);
 				}
 				calculationTime = System.currentTimeMillis() - calculationStart;
 				setSolutionText();

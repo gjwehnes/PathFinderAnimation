@@ -32,14 +32,15 @@ public class PathFinder {
 		return this.steps;
 	}
 		
-	public ArrayList<Node> findAPath(Node start, Node goal) {
+	//Return the first solution, regardless of length and by visiting the neighbour nodes in given order
+	public ArrayList<Node> findAnyPath(Node start, Node goal) {
 
 		calculating = true;
 		steps = 0;
 		path.clear();
 		path.add(start);
 
-		boolean result = findAPath(start, goal, path);
+		boolean result = findAnyPath(start, goal, path);
 		
 		if (result == false || abort) {
 			path.clear();
@@ -50,10 +51,7 @@ public class PathFinder {
 		return path;
 	}
 
-	//BRUTE FORCE ALGORITHM
-	//
-	//Will find a solution, regardless of length
-	private boolean findAPath(Node current, Node goal, ArrayList<Node> currentPath) {
+	private boolean findAnyPath(Node current, Node goal, ArrayList<Node> currentPath) {
 
 		takeStep();
 		printState(currentPath);
@@ -76,7 +74,7 @@ public class PathFinder {
 				boolean haveNotVisited =currentPath.contains(neighbour) == false;
 				if (haveNotVisited) {
 					currentPath.add(neighbour);
-					boolean solved = findAPath(neighbour, goal, currentPath);
+					boolean solved = findAnyPath(neighbour, goal, currentPath);
 					if (solved) {
 						return solved;
 					}
@@ -90,12 +88,9 @@ public class PathFinder {
 	}
 
 
-	//REFINED ALGORITHM #1
-	//
 	//Track the distance used, and compare it to a maximum; don't pursue paths that will be longer
-	//This assumes that we know approximately how long the path should be!
-
-	public ArrayList<Node> findAPath1(Node start, Node goal, double additionalDistancePercent) {
+	//This assumes that we can calculate how long the optimal path would be.
+	public ArrayList<Node> findAPathLengthLimited(Node start, Node goal, double additionalDistancePercent) {
 
 		calculating = true;
 		steps = 0;
@@ -105,7 +100,7 @@ public class PathFinder {
 		double additionalDistance = findDistance(start,goal) * (additionalDistancePercent / 100);		
 		path.add(start);
 
-		boolean result = findAPath1(start, goal, path, findDistance(start,goal) + additionalDistance);
+		boolean result = findAPathLengthLimited(start, goal, path, findDistance(start,goal) + additionalDistance);
 		
 		if (result == false || abort) {
 			path.clear();
@@ -115,7 +110,8 @@ public class PathFinder {
 		calculating = false;
 		return path;
 	}
-	private boolean findAPath1(Node current, Node goal, ArrayList<Node> currentPath, double distanceLeft) {
+	
+	private boolean findAPathLengthLimited(Node current, Node goal, ArrayList<Node> currentPath, double distanceLeft) {
 
 		takeStep();
 		printState(currentPath);
@@ -143,7 +139,7 @@ public class PathFinder {
 				boolean haveDistanceRemaining = (distanceLeft >= distanceToNeighbour);
 				if (haveNotVisited && haveDistanceRemaining) {
 					currentPath.add(neighbour);
-					boolean solved = findAPath1(neighbour, goal, currentPath, distanceLeft - distanceToNeighbour);
+					boolean solved = findAPathLengthLimited(neighbour, goal, currentPath, distanceLeft - distanceToNeighbour);
 					if (solved) {
 						return true;
 					}
@@ -156,19 +152,16 @@ public class PathFinder {
 		}		
 	}
 
-	//REFINED ALGORITHM #2 - Track the distance left
-	//
-	//Track the distance used, and compare it to a maximum; don't pursue paths that will be longer
-	//This assumes that we know approximately how long the path should be, and how far from each node to the destination
-
-	public ArrayList<Node> findAPath2(Node start, Node goal) {
+	//Only visit neighbour nodes that themselves are closer to the goal.
+	//This assumes that we know the distance from any node to the destination
+	public ArrayList<Node> findAPathNoRegression(Node start, Node goal) {
 
 		calculating = true;
 		steps = 0;
 		path.clear();
 		path.add(start);
 
-		boolean result = findAPath2(start, goal, path);
+		boolean result = findAPathNoRegression(start, goal, path);
 		
 		if (result == false || abort) {
 			path.clear();
@@ -178,7 +171,8 @@ public class PathFinder {
 		calculating = false;
 		return path;
 	}
-	private boolean findAPath2(Node current, Node goal, ArrayList<Node> currentPath) {
+	
+	private boolean findAPathNoRegression(Node current, Node goal, ArrayList<Node> currentPath) {
 
 		takeStep();
 		printState(currentPath);
@@ -205,7 +199,7 @@ public class PathFinder {
 				boolean closerToGoal = distanceFromNeigbour < distanceFromCurrent;
 				if (haveNotVisited && closerToGoal) {
 					currentPath.add(neighbour);
-					boolean solved = findAPath2(neighbour, goal, currentPath);
+					boolean solved = findAPathNoRegression(neighbour, goal, currentPath);
 					if (solved) {
 						return true;
 					}
@@ -218,6 +212,77 @@ public class PathFinder {
 		}		
 	}
 
+	//Visit first those neighbour nodes that themselves are closer to the goal.
+	//This requires the algorithm to sort the list of neighbours
+	public ArrayList<Node> findAPathPrioritizeProgression(Node start, Node goal) {
+
+		calculating = true;
+		steps = 0;
+		path.clear();
+		path.add(start);
+
+		boolean result = findAPathPrioritizeProgression(start, goal, path);
+		
+		if (result == false || abort) {
+			path.clear();
+		}
+		
+		abort = false;
+		calculating = false;
+		return path;
+	}
+
+	private boolean findAPathPrioritizeProgression(Node current, Node goal, ArrayList<Node> currentPath) {
+
+		takeStep();
+		printState(currentPath);
+
+		if (abort) {
+			return false;
+		}else if (current == goal) {			
+			currentPath.add(goal);
+			System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
+			return true;
+		}
+		else {
+			//clone the neighbours, and compute their distances to the goal
+			ArrayList<Node> orderedNeighbours = (ArrayList<Node>) current.neighbourNodes.clone();
+			ArrayList<Double> orderedDistances = new ArrayList<Double>(orderedNeighbours.size());
+			for (int i = 0; i < orderedNeighbours.size(); i++) {
+				orderedDistances.add(findDistance(orderedNeighbours.get(i), goal));
+			}
+			//perform an insertion sort algorithm
+			for (int i = 1; i < orderedDistances.size(); ++i) {
+				Node node = orderedNeighbours.get(i);
+				Double key = orderedDistances.get(i);
+				int j = i - 1;
+				while (j >= 0 && orderedDistances.get(j) > key) {
+					orderedNeighbours.set(j + 1, orderedNeighbours.get(j));
+					orderedDistances.set(j + 1, orderedDistances.get(j));
+					j = j - 1;
+				}
+				orderedNeighbours.set(j + 1, node);
+				orderedDistances.set(j + 1, key);
+			}
+			//now visit each node in order
+			for (Node neighbour : orderedNeighbours) {
+				boolean haveNotVisited =currentPath.contains(neighbour) == false;
+				if (haveNotVisited) {
+					currentPath.add(neighbour);
+					boolean solved = findAPathPrioritizeProgression(neighbour, goal, currentPath);
+					if (solved) {
+						return solved;
+					}
+					else {
+						currentPath.remove(neighbour);
+					}								
+				}
+			}
+			return false;
+		}		
+		
+	}
+	
 	private double findDistance(Node from, Node to) {
 		double distanceX = from.getCenterX() - to.getCenterX();
 		double distanceY = from.getCenterY() - to.getCenterY();					

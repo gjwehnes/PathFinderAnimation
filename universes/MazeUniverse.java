@@ -29,10 +29,10 @@ public class MazeUniverse implements Universe, Graph {
 		double screenMaxY = PathFinderFrame.screenHeight / 2;
 		
 		//create random maze
-		final int ROWS = 16;
-		final int COLS = 16;
-		final double BARRIER_FREQUENCY = 0.2;
-		final double COIN_FREQUENCY = 0.4;
+		final int ROWS = 40;
+		final int COLS = 40;
+		final double BARRIER_FREQUENCY = 0.4;
+		final double HALF_BARRIER_WIDTH = 4;
 		final double COL_WIDTH = (PathFinderFrame.screenWidth - 16) / (float)COLS; 
 		final double ROW_HEIGHT = (PathFinderFrame.screenHeight - 16) / (float)ROWS; 
 
@@ -40,12 +40,13 @@ public class MazeUniverse implements Universe, Graph {
 		Node[][] nodeArray = new Node[ROWS][COLS];
 		for (int row = 0; row < ROWS; row++) {
 			for (int col = 0; col < COLS; col++) {
-				nodeArray[row][col] = new Node("",5, screenMinX + (col * COL_WIDTH) + (COL_WIDTH / 2), screenMinY + (row * ROW_HEIGHT) + (ROW_HEIGHT / 2));
+				nodeArray[row][col] = new Node((char)('A' + col)+Integer.toString(row),5, screenMinX + (col * COL_WIDTH) + (COL_WIDTH / 2), screenMinY + (row * ROW_HEIGHT) + (ROW_HEIGHT / 2));
 				nodes.add(nodeArray[row][col]);
 			}
 		}
 
 		Random random = new Random();
+		random.setSeed(0);
 		for (int row = 0; row < ROWS; row++) {
 			for (int col = 0; col < COLS; col++) {
 				Node current = nodeArray[row][col];
@@ -62,7 +63,7 @@ public class MazeUniverse implements Universe, Graph {
 						neighbour.neighbourDistances.add(findDistance(current, neighbour));
 					}
 					else {
-						sprites.add(new BarrierSprite(minX + COL_WIDTH - 8, minY, minX + COL_WIDTH + 8 , minY + ROW_HEIGHT, true));						
+						sprites.add(new BarrierSprite(minX + COL_WIDTH - HALF_BARRIER_WIDTH, minY, minX + COL_WIDTH + HALF_BARRIER_WIDTH , minY + ROW_HEIGHT, true));						
 					}
 				}
 				if (row < ROWS - 1) {
@@ -75,11 +76,17 @@ public class MazeUniverse implements Universe, Graph {
 						neighbour.neighbourDistances.add(findDistance(current, neighbour));
 					}
 					else {
-						sprites.add(new BarrierSprite(minX, minY + ROW_HEIGHT - 8, minX + COL_WIDTH, minY + ROW_HEIGHT + 8, true));						
+						sprites.add(new BarrierSprite(minX, minY + ROW_HEIGHT - HALF_BARRIER_WIDTH, minX + COL_WIDTH, minY + ROW_HEIGHT + HALF_BARRIER_WIDTH, true));						
 					}
 				}
 			}
-		}	
+		}
+		
+		
+		//TEMP TEST
+		PathFinder p = new PathFinder();
+		p.findAPathPrioritizeProgression(nodeArray[2][0], nodeArray[2][3]);
+		
 	}
 	
 	private static double findDistance(Node from, Node to) {
