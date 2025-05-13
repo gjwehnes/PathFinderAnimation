@@ -117,24 +117,24 @@ public class PathFinderFrame extends AnimationFrame{
 			}
 		}
 
-//		g.setColor(Color.WHITE);
-//		
-//		if (optimalPath.size() >= 1) {
-//			try {
-//				//this code may fail as the list may be modified asynchronously
-//				for (int i = 0; i < optimalPath.size() - 1; i++) {
-//					Node cityA = optimalPath.get(i);
-//					Node cityB = optimalPath.get(i+1);
-//					
-//					Graphics2D g2 = (Graphics2D) g;
-//				    g2.setStroke(new BasicStroke(5));				
-//				    g2.drawLine(translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()), translateToScreenX(cityB.getCenterX()), translateToScreenY(cityB.getCenterY()));
-//				    g2.drawString(cityA.name, translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()));
-//				}
-//			} catch (Exception e) {
-//				//abort this rendering
-//			}
-//		}
+		g.setColor(Color.WHITE);
+		
+		if (optimalPath.size() >= 1) {
+			try {
+				//this code may fail as the list may be modified asynchronously
+				for (int i = 0; i < optimalPath.size() - 1; i++) {
+					Node cityA = optimalPath.get(i);
+					Node cityB = optimalPath.get(i+1);
+					
+					Graphics2D g2 = (Graphics2D) g;
+				    g2.setStroke(new BasicStroke(5));				
+				    g2.drawLine(translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()), translateToScreenX(cityB.getCenterX()), translateToScreenY(cityB.getCenterY()));
+				    g2.drawString(cityA.name, translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()));
+				}
+			} catch (Exception e) {
+				//abort this rendering
+			}
+		}
 		
 	}
 	

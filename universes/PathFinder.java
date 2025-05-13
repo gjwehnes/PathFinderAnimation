@@ -9,17 +9,20 @@ import java.util.Arrays;
 
 public class PathFinder {
 		
-	private ArrayList<Node> nodes = new ArrayList<Node>();
-	protected ArrayList<Node> path = new ArrayList<Node>();
-
+	protected ArrayList<Node> currentPath = new ArrayList<Node>();
+	protected ArrayList<Node> optimalPath = new ArrayList<Node>();
+	
 	private final long STEP_DELAY_MS = 0;
+	private final boolean OPTIMIZE = true;
 	private final boolean VERBOSE = false;
 			
 	protected long steps = 0;
-	private long current_time = 0;
+	private long currentTime = 0;
+	private long endTime = Long.MAX_VALUE;
 	private boolean abort = false;
 	private boolean calculating = false;		
-
+	private long timeLimit = 5000;
+	
 	public void abort() {
 		this.abort = true;
 	}
@@ -31,24 +34,29 @@ public class PathFinder {
 	public long getSteps() {
 		return this.steps;
 	}
+	
+	public long getTimeLimit() {
+		return timeLimit;
+	}
+
+	public void setTimeLimit(long timeLimit) {
+		this.timeLimit = timeLimit;
+	}
 		
 	//Return the first solution, regardless of length and by visiting the neighbour nodes in given order
 	public ArrayList<Node> findAnyPath(Node start, Node goal) {
+		
+		initialize(start);
 
-		calculating = true;
-		steps = 0;
-		path.clear();
-		path.add(start);
-
-		boolean result = findAnyPath(start, goal, path);
+		boolean result = findAnyPath(start, goal, currentPath);
 		
 		if (result == false || abort) {
-			path.clear();
+			currentPath.clear();
 		}
 		
 		abort = false;
 		calculating = false;
-		return path;
+		return currentPath;
 	}
 
 	private boolean findAnyPath(Node current, Node goal, ArrayList<Node> currentPath) {
@@ -56,18 +64,26 @@ public class PathFinder {
 		takeStep();
 		printState(currentPath);
 
+		double optimalPathLength = pathLength(optimalPath);
+		double currentPathLength = pathLength(currentPath);
+
 		if (abort) {
 			return false;
-		}
-		else if (current == goal) {
+		} else if ((optimalPathLength > 0) && (currentPathLength > optimalPathLength)) {
+			return false;
+		}else if (current == goal) {			
 			System.out.println(String.format("Solution: have a cup of tea, you are already there :-)"));
 			return true;
 		}
 		else if (current.neighbourNodes.contains(goal)) {
 			//base case
 			currentPath.add(goal);
-			System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
-			return true;
+			printSolution();
+			if ((optimalPath.size() == 0) || (pathLength(currentPath) < pathLength(optimalPath))) {
+				optimalPath = (ArrayList<Node>) currentPath.clone();
+			}
+			currentPath.remove(goal);
+			return (OPTIMIZE == false);
 		}
 		else {		
 			for (Node neighbour : current.neighbourNodes) {
@@ -92,23 +108,20 @@ public class PathFinder {
 	//This assumes that we can calculate how long the optimal path would be.
 	public ArrayList<Node> findAPathLengthLimited(Node start, Node goal, double additionalDistancePercent) {
 
-		calculating = true;
-		steps = 0;
-		path.clear();
-		path.add(start);
+		initialize(start);
 		
 		double additionalDistance = findDistance(start,goal) * (additionalDistancePercent / 100);		
-		path.add(start);
+		currentPath.add(start);
 
-		boolean result = findAPathLengthLimited(start, goal, path, findDistance(start,goal) + additionalDistance);
+		boolean result = findAPathLengthLimited(start, goal, currentPath, findDistance(start,goal) + additionalDistance);
 		
 		if (result == false || abort) {
-			path.clear();
+			currentPath.clear();
 		}
 
 		abort = false;
 		calculating = false;
-		return path;
+		return currentPath;
 	}
 	
 	private boolean findAPathLengthLimited(Node current, Node goal, ArrayList<Node> currentPath, double distanceLeft) {
@@ -123,7 +136,7 @@ public class PathFinder {
 			double distanceToGoal = findDistance(current,goal);
 			if (distanceLeft >= distanceToGoal) {
 				currentPath.add(goal);
-				System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
+				printSolution();
 				return true;
 			}
 			else {
@@ -156,20 +169,17 @@ public class PathFinder {
 	//This assumes that we know the distance from any node to the destination
 	public ArrayList<Node> findAPathNoRegression(Node start, Node goal) {
 
-		calculating = true;
-		steps = 0;
-		path.clear();
-		path.add(start);
+		initialize(start);
 
-		boolean result = findAPathNoRegression(start, goal, path);
+		boolean result = findAPathNoRegression(start, goal, currentPath);
 		
 		if (result == false || abort) {
-			path.clear();
+			currentPath.clear();
 		}
 		
 		abort = false;
 		calculating = false;
-		return path;
+		return currentPath;
 	}
 	
 	private boolean findAPathNoRegression(Node current, Node goal, ArrayList<Node> currentPath) {
@@ -183,7 +193,7 @@ public class PathFinder {
 			return false;
 		}else if (current == goal) {			
 			currentPath.add(goal);
-			System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
+			printSolution();
 			return true;
 		}
 		else {		
@@ -216,20 +226,17 @@ public class PathFinder {
 	//This requires the algorithm to sort the list of neighbours
 	public ArrayList<Node> findAPathPrioritizeProgression(Node start, Node goal) {
 
-		calculating = true;
-		steps = 0;
-		path.clear();
-		path.add(start);
+		initialize(start);
 
-		boolean result = findAPathPrioritizeProgression(start, goal, path);
+		boolean result = findAPathPrioritizeProgression(start, goal, currentPath);
 		
 		if (result == false || abort) {
-			path.clear();
+			currentPath.clear();
 		}
 		
 		abort = false;
 		calculating = false;
-		return path;
+		return currentPath;
 	}
 
 	private boolean findAPathPrioritizeProgression(Node current, Node goal, ArrayList<Node> currentPath) {
@@ -237,12 +244,22 @@ public class PathFinder {
 		takeStep();
 		printState(currentPath);
 
+		double optimalPathLength = pathLength(optimalPath);
+		double currentPathLength = pathLength(currentPath);
+		
 		if (abort) {
 			return false;
+		} else if ((optimalPathLength > 0) && (currentPathLength > optimalPathLength)) {
+			return false;
 		}else if (current == goal) {			
+			//base case
 			currentPath.add(goal);
-			System.out.println(String.format("Solution: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
-			return true;
+			printSolution();
+			if ((optimalPath.size() == 0) || (pathLength(currentPath) < pathLength(optimalPath))) {
+				optimalPath = (ArrayList<Node>) currentPath.clone();
+			}
+			currentPath.remove(goal);
+			return (OPTIMIZE == false);
 		}
 		else {
 			//clone the neighbours, and compute their distances to the goal
@@ -283,6 +300,7 @@ public class PathFinder {
 		
 	}
 	
+			
 	private double findDistance(Node from, Node to) {
 		double distanceX = from.getCenterX() - to.getCenterX();
 		double distanceY = from.getCenterY() - to.getCenterY();					
@@ -299,12 +317,26 @@ public class PathFinder {
 		return length;
 	}
 	
+	private void initialize(Node start) {
+		calculating = true;
+		steps = 0;
+		currentTime = System.currentTimeMillis();
+		endTime = currentTime + timeLimit;
+		currentPath.clear();
+		currentPath.add(start);
+	}
+	
 	private void takeStep() {		
 		//sleep until the next refresh time
-		long next_refresh_time = current_time + STEP_DELAY_MS;
+		long next_refresh_time = currentTime + STEP_DELAY_MS;
 
+		currentTime = System.currentTimeMillis();
+		if (currentTime > endTime) {
+			abort = true;
+		}
+			
 		//sleep until the next refresh time
-		while (current_time < next_refresh_time)
+		while (currentTime < next_refresh_time)
 		{
 			//allow other threads (i.e. the Swing thread) to do its work
 			Thread.yield();
@@ -316,16 +348,27 @@ public class PathFinder {
 			} 
 
 			//track current time
-			current_time = System.currentTimeMillis();
-		}
-		
+			currentTime = System.currentTimeMillis();
+		}		
 		this.steps++;
 	}
 	
 	private void printState(ArrayList<Node> currentPath) {
 		if (VERBOSE) {
-			System.out.println(String.format("Step: calls: %8d; length = %5.1f; path = %s" , steps, pathLength(currentPath), currentPath.toString()));
+			System.out.println(String.format("Step: calls: %8d;  time: %8d; length = %5.1f; path = %s" ,
+					steps,
+					endTime - currentTime,
+					pathLength(currentPath),
+					currentPath.toString()));
 		}		
 	}	
+	
+	private void printSolution() {
+		System.out.println(String.format("Solution: calls: %8d;  time: %8d; length = %5.1f; path = %s", 
+				steps,
+				endTime - currentTime,
+				pathLength(currentPath),
+				currentPath.toString()));
+	}
 	
 }
