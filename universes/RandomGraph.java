@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class RandomGraph implements Universe, Graph {
 
@@ -21,8 +22,10 @@ public class RandomGraph implements Universe, Graph {
 	}
 	
 	private void buildRandomGraph(int rows, int columns) {
-		
-		
+
+		Random random = new Random();
+		random.setSeed(0);
+
 		double spacingX = (MAX_X - MIN_X) / (columns - 1);
 		double spacingY = (MAX_Y - MIN_Y) / (rows - 1);
 
@@ -30,8 +33,8 @@ public class RandomGraph implements Universe, Graph {
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < columns; col++) {
 				Node node = new Node();
-				node.centerX = MIN_X + (spacingX * col) + ( (Math.random() * 2- 1) * spacingX * DEVIATION_FACTOR);
-				node.centerY = MIN_Y + (spacingY * row) + ( (Math.random() * 2- 1) * spacingY * DEVIATION_FACTOR);
+				node.centerX = MIN_X + (spacingX * col) + ( (random.nextDouble() * 2- 1) * spacingX * DEVIATION_FACTOR);
+				node.centerY = MIN_Y + (spacingY * row) + ( (random.nextDouble() * 2- 1) * spacingY * DEVIATION_FACTOR);
 				node.name = (char)('A' + col) + Integer.toString(row, 10);
 				nodeArray[row][col] = node;
 				nodes.add(node);
