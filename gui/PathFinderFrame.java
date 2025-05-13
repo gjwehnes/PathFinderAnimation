@@ -33,7 +33,8 @@ public class PathFinderFrame extends AnimationFrame{
 	Node end = null;
 	long calculationStart = 0;
 	long calculationTime = 0;
-	ArrayList<Node> currentPath = new ArrayList<Node>();
+	ArrayList<Node> currentPath = null;
+	ArrayList<Node> optimalPath = null;
 	Thread calculationThread = null;	
 	State state = State.READY;
 	Graph graph = null;
@@ -71,12 +72,13 @@ public class PathFinderFrame extends AnimationFrame{
 		
 		graph = (Graph)universe;
 		pathfinder = new PathFinder();
-		currentPath = pathfinder.path;
 	}
 		
 	protected void paintAnimationPanel(Graphics g) {
 	
 		graph = (Graph)universe;
+		currentPath = pathfinder.currentPath;
+		optimalPath = pathfinder.optimalPath;
 		
 		for (Node sprite: graph.getNodes()) {
 			Node city = (Node)sprite;
@@ -98,7 +100,7 @@ public class PathFinderFrame extends AnimationFrame{
 
 		g.setColor(Color.MAGENTA);
 		
-		if (currentPath.size() >= 1) {	
+		if (currentPath.size() >= 1) {
 			try {
 				//this code may fail as the list may be modified asynchronously
 				for (int i = 0; i < currentPath.size() - 1; i++) {
@@ -114,6 +116,25 @@ public class PathFinderFrame extends AnimationFrame{
 				//abort this rendering
 			}
 		}
+
+//		g.setColor(Color.WHITE);
+//		
+//		if (optimalPath.size() >= 1) {
+//			try {
+//				//this code may fail as the list may be modified asynchronously
+//				for (int i = 0; i < optimalPath.size() - 1; i++) {
+//					Node cityA = optimalPath.get(i);
+//					Node cityB = optimalPath.get(i+1);
+//					
+//					Graphics2D g2 = (Graphics2D) g;
+//				    g2.setStroke(new BasicStroke(5));				
+//				    g2.drawLine(translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()), translateToScreenX(cityB.getCenterX()), translateToScreenY(cityB.getCenterY()));
+//				    g2.drawString(cityA.name, translateToScreenX(cityA.getCenterX()), translateToScreenY(cityA.getCenterY()));
+//				}
+//			} catch (Exception e) {
+//				//abort this rendering
+//			}
+//		}
 		
 	}
 	
@@ -254,7 +275,6 @@ public class PathFinderFrame extends AnimationFrame{
 		{
 			public void run()
 			{
-				lblBottom.setText(String.format("CALCULATING"));				
 				if (pathfinder.isCalculating()) { 
 					//calculation is still running....abort
 					pathfinder.abort();
@@ -262,17 +282,17 @@ public class PathFinderFrame extends AnimationFrame{
 								
 				calculationStart = System.currentTimeMillis();
 				if (cboAlgorithm.getSelectedIndex() == 0) {				
-					currentPath = pathfinder.findAnyPath(start,end);
+					pathfinder.findAnyPath(start,end);
 				}				
 				else if (cboAlgorithm.getSelectedIndex() == 1) {
-					currentPath = pathfinder.findAPathNoRegression(start,end);  //TEMP
+					pathfinder.findAPathNoRegression(start,end);  //TEMP
 				}
 				else if (cboAlgorithm.getSelectedIndex() == 2) {
-					currentPath = pathfinder.findAPathPrioritizeProgression(start,end);  //TEMP
+					pathfinder.findAPathPrioritizeProgression(start,end);  //TEMP
 				}
 				else if (cboAlgorithm.getSelectedIndex() >= 3 && cboAlgorithm.getSelectedIndex() <= 6) {
 					int percentage = (8 - cboAlgorithm.getSelectedIndex()) * 20;
-					currentPath = pathfinder.findAPathLengthLimited(start,end, percentage);
+					pathfinder.findAPathLengthLimited(start,end, percentage);
 				}
 				calculationTime = System.currentTimeMillis() - calculationStart;
 				setSolutionText();

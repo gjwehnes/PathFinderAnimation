@@ -29,9 +29,9 @@ public class MazeUniverse implements Universe, Graph {
 		double screenMaxY = PathFinderFrame.screenHeight / 2;
 		
 		//create random maze
-		final int ROWS = 40;
-		final int COLS = 40;
-		final double BARRIER_FREQUENCY = 0.4;
+		final int ROWS = 20;
+		final int COLS = 20;
+		final double BARRIER_FREQUENCY = 0.2;
 		final double HALF_BARRIER_WIDTH = 4;
 		final double COL_WIDTH = (PathFinderFrame.screenWidth - 16) / (float)COLS; 
 		final double ROW_HEIGHT = (PathFinderFrame.screenHeight - 16) / (float)ROWS; 
@@ -81,12 +81,7 @@ public class MazeUniverse implements Universe, Graph {
 				}
 			}
 		}
-		
-		
-		//TEMP TEST
-		PathFinder p = new PathFinder();
-		p.findAPathPrioritizeProgression(nodeArray[2][0], nodeArray[2][3]);
-		
+				
 	}
 	
 	private static double findDistance(Node from, Node to) {
