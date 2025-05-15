@@ -14,7 +14,8 @@ public class PathFinder {
 	
 	private final long STEP_DELAY_MS = 0;
 	private final boolean OPTIMIZE = true;
-	private final boolean VERBOSE = false;
+	private final boolean PRINT_STEPS = false;
+	private final boolean PRINT_SOLUTIONS = false;
 			
 	protected long steps = 0;
 	private long currentTime = 0;
@@ -354,7 +355,7 @@ public class PathFinder {
 	}
 	
 	private void printState(ArrayList<Node> currentPath) {
-		if (VERBOSE) {
+		if (PRINT_STEPS) {
 			System.out.println(String.format("Step: calls: %8d;  time: %8d; length = %5.1f; path = %s" ,
 					steps,
 					endTime - currentTime,
@@ -364,11 +365,12 @@ public class PathFinder {
 	}	
 	
 	private void printSolution() {
-		System.out.println(String.format("Solution: calls: %8d;  time: %8d; length = %5.1f; path = %s", 
-				steps,
-				endTime - currentTime,
-				pathLength(currentPath),
-				currentPath.toString()));
-	}
-	
+		if (PRINT_SOLUTIONS) {			
+			System.out.println(String.format("Solution: calls: %8d;  time: %8d; length = %5.1f; path = %s", 
+					steps,
+					endTime - currentTime,
+					pathLength(currentPath),
+					currentPath.toString()));
+		}
+	}	
 }
