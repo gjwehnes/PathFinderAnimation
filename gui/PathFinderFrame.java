@@ -77,8 +77,15 @@ public class PathFinderFrame extends AnimationFrame{
 	protected void paintAnimationPanel(Graphics g) {
 	
 		graph = (Graph)universe;
-		currentPath = pathfinder.currentPath;
-		optimalPath = pathfinder.optimalPath;
+		
+		if (universe instanceof MazeUniverse) {
+			optimalPath = ((MazeUniverse)universe).getPathfinder().currentPath;
+			optimalPath = ((MazeUniverse)universe).getPathfinder().optimalPath;
+		}
+		else {
+			currentPath = pathfinder.currentPath;
+			optimalPath = pathfinder.optimalPath;
+		}
 		
 		for (Node sprite: graph.getNodes()) {
 			Node city = (Node)sprite;
@@ -100,7 +107,7 @@ public class PathFinderFrame extends AnimationFrame{
 
 		g.setColor(Color.MAGENTA);
 		
-		if (currentPath.size() >= 1) {
+		if (currentPath != null && currentPath.size() >= 1) {
 			try {
 				//this code may fail as the list may be modified asynchronously
 				for (int i = 0; i < currentPath.size() - 1; i++) {
@@ -119,7 +126,7 @@ public class PathFinderFrame extends AnimationFrame{
 
 		g.setColor(Color.WHITE);
 		
-		if (optimalPath.size() >= 1) {
+		if (optimalPath != null && optimalPath.size() >= 1) {
 			try {
 				//this code may fail as the list may be modified asynchronously
 				for (int i = 0; i < optimalPath.size() - 1; i++) {
@@ -211,6 +218,10 @@ public class PathFinderFrame extends AnimationFrame{
 		}		
 		
 		setPathText();
+		
+		if (universe instanceof MazeUniverse) {
+			this.lblBottom.setText(universe.toString());
+		}
 		
 	}
 	
