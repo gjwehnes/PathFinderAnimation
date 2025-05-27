@@ -8,26 +8,52 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PathFinder {
-		
+	
+	/*
+	 * Solution to the path finding methods are stored within these two instance variables.
+	 * In pure recursion, the solution is either the return value of the function or one of the
+	 * parameters (as a mutated object). However, the intent is to see these functions in action.
+	 * Thus, the recursive methods do not have a return type (they are void) and instead
+	 * build / store their solutions paths in these instance variables. Thus, the (partial)
+	 * solution is visible to other objects at any time. An object running on a separate thread
+	 * (i.e. the animation frame) can provide a visualization of the solution in progress. 
+	 */	
 	protected ArrayList<Node> currentPath = new ArrayList<Node>();
+	/*
+	 * The currentPath is intended to be the working data structure (and will shrink / grow continuously)
+	 * while the optimalPath is the best solution found (if any)
+	 */
 	protected ArrayList<Node> optimalPath = new ArrayList<Node>();
 	
-	private final long STEP_DELAY_MS = 0;
-	private final boolean OPTIMIZE = true;
-	private final boolean PRINT_STEPS = false;
-	private final boolean PRINT_SOLUTIONS = false;
-			
+	/*
+	 * constants to control behaviour of the pathfinding algorithms
+	 */
+	private long stepDelay = 0;
+	private boolean stopAtSolution = false;	
+	private boolean printSteps = false;
+	private boolean printSolutions = true;
+	private long timeLimit = 5000;
+	
+	/*
+	 * variables to track current state of the pathfinding algorithms
+	 */
 	protected long steps = 0;
 	private long currentTime = 0;
 	private long endTime = Long.MAX_VALUE;
-	private boolean abort = false;
 	private boolean calculating = false;		
-	private long timeLimit = 5000;
-	
-	public void abort() {
-		this.abort = true;
+
+	private boolean abort = false;
+
+	public PathFinder(long stepDelay, boolean stopAtSolution, boolean printSteps, boolean printSolutions, long timeLimit) {
+		super();
+		this.stepDelay = stepDelay;
+		this.stopAtSolution = stopAtSolution;
+		this.printSteps = printSteps;
+		this.printSolutions = printSolutions;
+		this.timeLimit = timeLimit;
 	}
 	
+	//accessors
 	public boolean isCalculating() {
 		return calculating;
 	}
@@ -40,67 +66,75 @@ public class PathFinder {
 		return timeLimit;
 	}
 
+	//mutators
+	public void abort() {
+		this.abort = true;
+	}
+	
 	public void setTimeLimit(long timeLimit) {
 		this.timeLimit = timeLimit;
 	}
-		
-	//Return the first solution, regardless of length and by visiting the neighbour nodes in given order
-	public ArrayList<Node> findAnyPath(Node start, Node goal) {
+	
+	// RECURSIVE PATH FINDING ALGORITHMS
+	
+	/*
+	 * Find solution(s) regardless of length by recursively visiting the neighbour nodes in given order.
+	 * This represents a simple "left-to-right traversal" of the solution tree
+	 */
+	
+	public void findAnyPath(Node start, Node goal) {
 		
 		initialize(start);
-
-		boolean result = findAnyPath(start, goal, currentPath);
-		
-		if (result == false || abort) {
-			currentPath.clear();
-		}
-		
-		abort = false;
-		calculating = false;
-		return currentPath;
+		findAnyPath(start, goal, currentPath);
+		terminate();
 	}
 
-	private boolean findAnyPath(Node current, Node goal, ArrayList<Node> currentPath) {
-
-		takeStep();
-		printState(currentPath);
+	private void findAnyPath(Node current, Node goal, ArrayList<Node> currentPath) {
 
 		double optimalPathLength = pathLength(optimalPath);
 		double currentPathLength = pathLength(currentPath);
 
+		takeStep();
+		printState(currentPath);
+
 		if (abort) {
-			return false;
-		} else if ((optimalPathLength > 0) && (currentPathLength > optimalPathLength)) {
-			return false;
-		}else if (current == goal) {			
-			System.out.println(String.format("Solution: have a cup of tea, you are already there :-)"));
-			return true;
-		}
-		else if (current.neighbourNodes.contains(goal)) {
-			//base case
-			currentPath.add(goal);
-			printSolution();
-			if ((optimalPath.size() == 0) || (pathLength(currentPath) < pathLength(optimalPath))) {
+			//external signal to abort calculation.
+			//do not recurse, return
+			return;
+		} else if ((optimalPathLength > 0) && (currentPathLength >= optimalPathLength)) {
+			//if solution has already been found and current path is already longer, abandon this path
+			//do not recurse, return
+			return;
+		} else if (current == goal) {
+			if ((optimalPath.size() == 0)
+					|| (pathLength(currentPath) < pathLength(optimalPath))) {
 				optimalPath = (ArrayList<Node>) currentPath.clone();
+				printSolution(optimalPath);
 			}
-			currentPath.remove(goal);
-			return (OPTIMIZE == false);
+			//do not recurse, return			
+			return;
 		}
-		else {		
+		else {
+			//recursive case
 			for (Node neighbour : current.neighbourNodes) {
-				boolean haveNotVisited =currentPath.contains(neighbour) == false;
-				if (haveNotVisited) {
+				//do not move to a neighbour that has already been visited, to prevent circular paths
+				if (currentPath.contains(neighbour) == false) {
 					currentPath.add(neighbour);
-					boolean solved = findAnyPath(neighbour, goal, currentPath);
-					if (solved) {
-						return solved;
+					findAnyPath(neighbour, goal, currentPath);
+					if (abort) {
+						return;
+					}
+					else if (optimalPath.size() > 0 && stopAtSolution) {
+						//found a solution and should stop at first solution
+						return;
 					}
 					else {
+						//do not return, continue loop and therefore continue recursion
 						currentPath.remove(neighbour);
 					}								
 				}
 			}
-			return false;
+			return;
 		}		
 	}
 
@@ -137,7 +171,7 @@ public class PathFinder {
 			double distanceToGoal = findDistance(current,goal);
 			if (distanceLeft >= distanceToGoal) {
 				currentPath.add(goal);
-				printSolution();
+				printSolution(currentPath);
 				return true;
 			}
 			else {
@@ -194,7 +228,7 @@ public class PathFinder {
 			return false;
 		}else if (current == goal) {			
 			currentPath.add(goal);
-			printSolution();
+			printSolution(currentPath);
 			return true;
 		}
 		else {		
@@ -255,12 +289,12 @@ public class PathFinder {
 		}else if (current == goal) {			
 			//base case
 			currentPath.add(goal);
-			printSolution();
+			printSolution(currentPath);
 			if ((optimalPath.size() == 0) || (pathLength(currentPath) < pathLength(optimalPath))) {
 				optimalPath = (ArrayList<Node>) currentPath.clone();
 			}
 			currentPath.remove(goal);
-			return (OPTIMIZE == false);
+			return (stopAtSolution);
 		}
 		else {
 			//clone the neighbours, and compute their distances to the goal
@@ -287,9 +321,9 @@ public class PathFinder {
 				boolean haveNotVisited =currentPath.contains(neighbour) == false;
 				if (haveNotVisited) {
 					currentPath.add(neighbour);
-					boolean solved = findAPathPrioritizeProgression(neighbour, goal, currentPath);
-					if (solved) {
-						return solved;
+					boolean stop = findAPathPrioritizeProgression(neighbour, goal, currentPath);
+					if (stop) {
+						return stop;
 					}
 					else {
 						currentPath.remove(neighbour);
@@ -301,7 +335,8 @@ public class PathFinder {
 		
 	}
 	
-			
+	//utility functions
+	
 	private double findDistance(Node from, Node to) {
 		double distanceX = from.getCenterX() - to.getCenterX();
 		double distanceY = from.getCenterY() - to.getCenterY();					
@@ -324,12 +359,23 @@ public class PathFinder {
 		currentTime = System.currentTimeMillis();
 		endTime = currentTime + timeLimit;
 		currentPath.clear();
+		optimalPath.clear();
 		currentPath.add(start);
 	}
 	
-	private void takeStep() {		
+	private void terminate() {
+		abort = false;
+		calculating = false;
+		if (abort) {
+			currentPath.clear();
+			optimalPath.clear();
+		}
+		
+	}
+	
+ 	private void takeStep() {		
 		//sleep until the next refresh time
-		long next_refresh_time = currentTime + STEP_DELAY_MS;
+		long next_refresh_time = currentTime + stepDelay;
 
 		currentTime = System.currentTimeMillis();
 		if (currentTime > endTime) {
@@ -354,23 +400,23 @@ public class PathFinder {
 		this.steps++;
 	}
 	
-	private void printState(ArrayList<Node> currentPath) {
-		if (PRINT_STEPS) {
-			System.out.println(String.format("Step: calls: %8d;  time: %8d; length = %5.1f; path = %s" ,
+	private void printState(ArrayList<Node> path) {
+		if (printSteps) {
+			System.out.println(String.format("Step: calls: %8d;  time remaining: %8d; length = %5.1f; path = %s" ,
 					steps,
 					endTime - currentTime,
 					pathLength(currentPath),
-					currentPath.toString()));
+					path.toString()));
 		}		
 	}	
 	
-	private void printSolution() {
-		if (PRINT_SOLUTIONS) {			
-			System.out.println(String.format("Solution: calls: %8d;  time: %8d; length = %5.1f; path = %s", 
+	private void printSolution(ArrayList<Node> path) {
+		if (printSolutions) {			
+			System.out.println(String.format("Solution: calls: %8d;  time remaining: %8d; length = %5.1f; path = %s", 
 					steps,
 					endTime - currentTime,
-					pathLength(currentPath),
-					currentPath.toString()));
+					pathLength(path),
+					path.toString()));
 		}
 	}	
 }

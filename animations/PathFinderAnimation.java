@@ -68,6 +68,7 @@ public class PathFinderAnimation implements Animation {
 
 	@Override
 	public void setComplete(boolean complete) {
+		this.current.setComplete(true);
 		this.animationComplete = true;		
 	}
 

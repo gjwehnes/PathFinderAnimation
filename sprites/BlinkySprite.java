@@ -1,6 +1,7 @@
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -11,11 +12,12 @@ import javax.imageio.ImageIO;
  */
 public class BlinkySprite implements DisplayableSprite {
 
-	protected static final double VELOCITY = 200;
+	protected static final double VELOCITY = 50;
 	private static final int WIDTH = 50;
 	private static final int HEIGHT = 50;
 	private static final int PERIOD_LENGTH = 200;
 	private static final int IMAGES_IN_CYCLE = 2;
+	private static final long SEARCH_REFRESH_TIME = 5000;
 
 	/*
 	 * images are stored in an array... this usually corresponds to the numbering of the images
@@ -43,12 +45,23 @@ public class BlinkySprite implements DisplayableSprite {
 	private double height = 50;
 	private boolean dispose = false;
 
+	private ArrayList<Node> nodes = new ArrayList<Node>();
+	private PathFinder pathfinder = null;
+	private ArrayList<Node> currentPath = new ArrayList<Node>();
+	private ArrayList<Node> nextPath = new ArrayList<Node>();
+	private Node nextNode = null;
+	private Node goalNode = null;	
+	int blinkyDestinationIndex = 0;
+	
+	
 	private Direction direction = Direction.RIGHT;
 	
-	public BlinkySprite(double centerX, double centerY) {
+	public BlinkySprite(double centerX, double centerY, ArrayList<Node> nodes) {
 
 		this.centerX =centerX;
-		this.centerY = centerY;	
+		this.centerY = centerY;
+		this.nodes = nodes;
+		
 		this.width = WIDTH;
 		this.height = HEIGHT;
 		
@@ -74,6 +87,11 @@ public class BlinkySprite implements DisplayableSprite {
 		up1= images[5];
 		right0 = images[6];
 		right1 = images[7];
+
+		pathfinder = new PathFinder(0, false, false, false, 5000);
+		getGoalNode();
+		
+		startPathFinding();
 		
 	}
 	
@@ -177,6 +195,75 @@ public class BlinkySprite implements DisplayableSprite {
 	public void update(Universe universe, long actual_delta_time) {
 		
 		elapsedTime += actual_delta_time;
+
+		getGoalNode();
+		
+		//if blinky does not currently have a destination node, retrieve from path
+		if (nextNode == null) {
+			//if current path is empty, load next path
+			if (currentPath.size() == 0) {
+				if (nextPath.size() != 0) {
+					currentPath.addAll(nextPath);
+					System.out.println(String.format("time = %3d.%03d; thread = %s; new path = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextPath.toString()));										
+					nextPath.clear();
+				}
+			}
+			//if there actually is a next node
+			if (currentPath.size() != 0) {
+				nextNode = currentPath.get(0);
+				currentPath.remove(0);
+		        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky next node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));				
+			}
+		}
+
+		if (nextNode != null) {
+
+			//check whether next node has been reached
+
+			double deltaX =  nextNode.getCenterX() - this.getCenterX();
+			double deltaY =  nextNode.getCenterY() - this.getCenterY();
+			
+			if ((Math.abs(nextNode.getCenterX() - this.getCenterX()) < 5)
+					&& (Math.abs(nextNode.getCenterY() - this.getCenterY()) < 5)) {
+				//within range of the destination, so move to the next destination
+		        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky reached node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));
+				if (currentPath.size() > 0) {
+					nextNode = currentPath.get(0);
+					currentPath.remove(0);
+			        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky next node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));
+				}
+				else {
+					nextNode = null;
+				}
+			}
+		}
+		
+		if (nextNode == null) {
+			this.setDirection(Direction.STOP);
+		}
+		else {
+			double deltaX =  nextNode.getCenterX() - this.getCenterX();
+			double deltaY =  nextNode.getCenterY() - this.getCenterY();
+			if ( Math.abs(deltaX) > Math.abs(deltaY)) {
+				//need to travel further in x dimension, so left or right
+				if (deltaX < 0) {
+					this.setDirection(Direction.LEFT);
+				}
+				else {
+					this.setDirection(Direction.RIGHT);					
+				}
+			}
+			else {
+				//need to travel further in y dimension, so up or down
+				if (deltaY < 0) {
+					this.setDirection(Direction.UP);
+				}
+				else {
+					this.setDirection(Direction.DOWN);					
+				}
+			}
+		}						
+		
 		
 		switch (direction) {
 		case UP:
@@ -194,4 +281,105 @@ public class BlinkySprite implements DisplayableSprite {
 		}
 
 	}
+	
+	
+	protected void startPathFinding() {
+
+		Thread calculationThread = new Thread()
+		{
+			public void run()
+			{
+		        while (dispose == false) {
+		        	
+		        	//if the next path is non-zero length, it has not yet been made the current path
+		        	while (nextPath.size() > 0) {
+						//allow other threads (i.e. the Swing thread) to do its work
+						Thread.yield();
+
+						try {
+							Thread.sleep(1);
+						}
+						catch(Exception e) {    					
+						} 
+		        	}
+		        	
+					Node startNode = currentPath.size() > 0 ?  currentPath.getLast() : getNearestNode();
+					
+					if (startNode != goalNode) {
+				        System.out.println(String.format("time = %3d.%03d; thread = %s; start search;  %2s to %2s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), startNode.toString(),goalNode.toString()));
+				        pathfinder.findAPathPrioritizeProgression(startNode, goalNode);
+	
+				        ArrayList<Node> tempPath = (ArrayList<Node>) pathfinder.optimalPath.clone();
+						truncatePath(tempPath, SEARCH_REFRESH_TIME + 500);
+						nextPath = tempPath;
+						System.out.println(String.format("time = %3d.%03d; thread = %s; end search; next path = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextPath.toString()));
+					}
+					
+		        }
+			}
+		};
+	
+		calculationThread.start();
+				
+	}
+	
+	public void getGoalNode() {
+		
+		if (goalNode == null) {
+			goalNode = nodes.get(nodes.size() - 1);
+		}
+		
+		for (Node node : nodes) {
+			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
+					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
+				goalNode = node;
+			}
+		}
+	}
+
+	/* 
+	 * calculate which node is most proximate to current position
+	 */
+	public Node getNearestNode() {
+
+		Node nearestNode = null;
+		double distanceToNearest = Double.MAX_VALUE;
+		for (Node nextNode : nodes) {
+			double deltaX = nextNode.getCenterX() - this.getCenterX();
+			double deltaY = nextNode.getCenterY() - this.getCenterY();
+			double distanceToNext = Math.sqrt(deltaX * deltaX + deltaY + deltaY);
+			if (distanceToNext < distanceToNearest) {
+				nearestNode = nextNode;
+				distanceToNearest = distanceToNext;
+			}
+		}
+		return nearestNode;
+	}
+	
+	public void truncatePath(ArrayList<Node> clonePath, double time) {
+		
+		int index = 1;
+		Node current = null;
+		Node next = null;
+		
+		/* 
+		 * calculate up to which node (but not including) the sprite can travel in a given time
+		 */		
+		while (clonePath.size() > index && time > 0) {
+			current = clonePath.get(index - 1);
+			next = clonePath.get(index);
+			double deltaX = current.getCenterX() - next.getCenterX();
+			double deltaY = current.getCenterY() - next.getCenterY();
+			double distanceToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+			double timeToNext = (distanceToNext / BlinkySprite.VELOCITY) * 1000;
+			time -= timeToNext;
+			index++;
+		}
+		
+		while (clonePath.size() > index) {
+			clonePath.remove(index);
+		}
+		
+	}
+	
 }

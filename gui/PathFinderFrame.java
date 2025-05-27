@@ -38,7 +38,7 @@ public class PathFinderFrame extends AnimationFrame{
 	Thread calculationThread = null;	
 	State state = State.READY;
 	Graph graph = null;
-	PathFinder pathfinder = new PathFinder();
+	PathFinder pathfinder = null;
 	
 	public PathFinderFrame(Animation animation) {
 		
@@ -71,7 +71,7 @@ public class PathFinderFrame extends AnimationFrame{
 		});
 		
 		graph = (Graph)universe;
-		pathfinder = new PathFinder();
+		pathfinder = new PathFinder(0, true, true, true, 5000);
 	}
 		
 	protected void paintAnimationPanel(Graphics g) {
@@ -79,8 +79,8 @@ public class PathFinderFrame extends AnimationFrame{
 		graph = (Graph)universe;
 		
 		if (universe instanceof MazeUniverse) {
-			optimalPath = ((MazeUniverse)universe).getPathfinder().currentPath;
-			optimalPath = ((MazeUniverse)universe).getPathfinder().optimalPath;
+			optimalPath = null;
+			optimalPath = null;
 		}
 		else {
 			currentPath = pathfinder.currentPath;
@@ -280,8 +280,6 @@ public class PathFinderFrame extends AnimationFrame{
 	
 	protected void findPath(Node start, Node end) {
 
-		pathfinder =  new PathFinder();
-		
 		calculationThread = new Thread()
 		{
 			public void run()
