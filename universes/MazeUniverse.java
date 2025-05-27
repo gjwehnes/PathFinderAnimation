@@ -13,7 +13,6 @@ public class MazeUniverse implements Universe, Graph {
 	private boolean complete = false;
 	private long elapsedTime = 0;
 
-	BlinkySprite blinky	= null;
 	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
 	private ArrayList<Node> nodes = new ArrayList<Node>();
 	private Node goalNode = null;
@@ -58,7 +57,7 @@ public class MazeUniverse implements Universe, Graph {
 		}
 
 		Random random = new Random();
-		random.setSeed(0);
+		random.setSeed(1);
 		for (int row = 0; row < ROWS; row++) {
 			for (int col = 0; col < COLS; col++) {
 				Node current = nodeArray[row][col];
@@ -93,9 +92,10 @@ public class MazeUniverse implements Universe, Graph {
 				}
 			}
 		}
-		
-		blinky = new BlinkySprite(screenMinX + HALF_COL_WIDTH,screenMinY + HALF_ROW_HEIGHT, nodes);
-		this.sprites.add(blinky);
+		for (int i = 0; i < 4; i++) {
+			this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * i * 5,
+					screenMinY + HALF_ROW_HEIGHT, nodes));
+		}
 				
 	}
 	

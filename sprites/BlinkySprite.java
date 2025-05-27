@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
  */
 public class BlinkySprite implements DisplayableSprite {
 
-	protected static final double VELOCITY = 50;
+	protected static final double VELOCITY = 200;
 	private static final int WIDTH = 50;
 	private static final int HEIGHT = 50;
 	private static final int PERIOD_LENGTH = 200;
@@ -311,10 +311,9 @@ public class BlinkySprite implements DisplayableSprite {
 	
 				        ArrayList<Node> tempPath = (ArrayList<Node>) pathfinder.optimalPath.clone();
 						truncatePath(tempPath, SEARCH_REFRESH_TIME + 500);
-						nextPath = tempPath;
 						System.out.println(String.format("time = %3d.%03d; thread = %s; end search; next path = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextPath.toString()));
-					}
-					
+						nextPath = tempPath;
+					}					
 		        }
 			}
 		};
@@ -324,17 +323,21 @@ public class BlinkySprite implements DisplayableSprite {
 	}
 	
 	public void getGoalNode() {
-		
+				
+		for (Node node : nodes) {
+			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
+					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
+				if (node != goalNode) {
+					goalNode = node;
+					System.out.println(String.format("time = %3d.%03d; thread = %s; next goal = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), goalNode.toString()));
+				}
+			}
+		}
+
 		if (goalNode == null) {
 			goalNode = nodes.get(nodes.size() - 1);
 		}
 		
-		for (Node node : nodes) {
-			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
-					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
-				goalNode = node;
-			}
-		}
 	}
 
 	/* 
