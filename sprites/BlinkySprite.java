@@ -45,22 +45,25 @@ public class BlinkySprite implements DisplayableSprite {
 	private double height = 50;
 	private boolean dispose = false;
 
+	private Universe universe = null;
 	private ArrayList<Node> nodes = new ArrayList<Node>();
 	private PathFinder pathfinder = null;
 	private ArrayList<Node> currentPath = new ArrayList<Node>();
 	private ArrayList<Node> nextPath = new ArrayList<Node>();
 	private Node nextNode = null;
-	private Node goalNode = null;	
+	private Node goalNode = null;
+	private String name = "";
 	int blinkyDestinationIndex = 0;
 	
-	
 	private Direction direction = Direction.RIGHT;
-	
-	public BlinkySprite(double centerX, double centerY, ArrayList<Node> nodes) {
+		
+	public BlinkySprite(double centerX, double centerY, ArrayList<Node> nodes, Universe universe, String name) {
 
 		this.centerX =centerX;
 		this.centerY = centerY;
 		this.nodes = nodes;
+		this.universe = universe;
+		this.name = name;
 		
 		this.width = WIDTH;
 		this.height = HEIGHT;
@@ -204,7 +207,7 @@ public class BlinkySprite implements DisplayableSprite {
 			if (currentPath.size() == 0) {
 				if (nextPath.size() != 0) {
 					currentPath.addAll(nextPath);
-					System.out.println(String.format("time = %3d.%03d; thread = %s; new path = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextPath.toString()));										
+					printLogEntry("new path = "+ nextPath.toString());
 					nextPath.clear();
 				}
 			}
@@ -212,7 +215,7 @@ public class BlinkySprite implements DisplayableSprite {
 			if (currentPath.size() != 0) {
 				nextNode = currentPath.get(0);
 				currentPath.remove(0);
-		        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky next node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));				
+				printLogEntry("next node = "+ nextNode.name);
 			}
 		}
 
@@ -226,11 +229,11 @@ public class BlinkySprite implements DisplayableSprite {
 			if ((Math.abs(nextNode.getCenterX() - this.getCenterX()) < 5)
 					&& (Math.abs(nextNode.getCenterY() - this.getCenterY()) < 5)) {
 				//within range of the destination, so move to the next destination
-		        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky reached node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));
+				printLogEntry("reached node: "+ nextNode.name);
 				if (currentPath.size() > 0) {
 					nextNode = currentPath.get(0);
 					currentPath.remove(0);
-			        System.out.println(String.format("time = %3d.%03d; thread = %s; Blinky next node: %s", elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextNode.name));
+					printLogEntry("next node = "+ nextNode.name);
 				}
 				else {
 					nextNode = null;
@@ -306,16 +309,25 @@ public class BlinkySprite implements DisplayableSprite {
 					Node startNode = currentPath.size() > 0 ?  currentPath.getLast() : getNearestNode();
 					
 					if (startNode != goalNode) {
-				        System.out.println(String.format("time = %3d.%03d; thread = %s; start search;  %2s to %2s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), startNode.toString(),goalNode.toString()));
-				        pathfinder.findAPathPrioritizeProgression(startNode, goalNode);
-	
+						printLogEntry(String.format("start search:  %2s to %2s", startNode.toString(),goalNode.toString() ));
+
+						pathfinder.findAPathPrioritizeProgression(startNode, goalNode);
 				        ArrayList<Node> tempPath = (ArrayList<Node>) pathfinder.optimalPath.clone();
 						truncatePath(tempPath, SEARCH_REFRESH_TIME + 500);
-						System.out.println(String.format("time = %3d.%03d; thread = %s; end search; next path = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), nextPath.toString()));
+
+						printLogEntry("end search; next path = " + nextPath.toString());
 						nextPath = tempPath;
 					}					
 		        }
+				
+				if (universe != null && universe instanceof MazeUniverse) {
+					dispose = universe.isComplete();
+				}
+				printLogEntry("sprite complete");
+
 			}
+			
+			
 		};
 	
 		calculationThread.start();
@@ -323,15 +335,13 @@ public class BlinkySprite implements DisplayableSprite {
 	}
 	
 	public void getGoalNode() {
-				
-		for (Node node : nodes) {
-			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
-					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
-				if (node != goalNode) {
-					goalNode = node;
-					System.out.println(String.format("time = %3d.%03d; thread = %s; next goal = %s",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName(), goalNode.toString()));
-				}
-			}
+		
+		if (universe != null && universe instanceof MazeUniverse) {
+			Node node = ((MazeUniverse)universe).getGoalNode();
+			if (node != goalNode) {
+				goalNode = node;
+				printLogEntry("next goal = " + goalNode.toString());
+			}			
 		}
 
 		if (goalNode == null) {
@@ -382,6 +392,12 @@ public class BlinkySprite implements DisplayableSprite {
 		while (clonePath.size() > index) {
 			clonePath.remove(index);
 		}
+		
+	}
+	
+	private void printLogEntry(String entry) {
+		System.out.println(String.format("time = %3d.%03d; name = %8s; thread = %8s;",elapsedTime / 1000, elapsedTime % 1000, this.name, Thread.currentThread().getName(), goalNode.toString())
+				+ entry);
 		
 	}
 	

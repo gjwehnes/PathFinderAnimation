@@ -92,11 +92,18 @@ public class MazeUniverse implements Universe, Graph {
 				}
 			}
 		}
-		for (int i = 0; i < 4; i++) {
-			this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * i * 5,
-					screenMinY + HALF_ROW_HEIGHT, nodes));
-		}
-				
+		
+		goalNode = nodes.get(nodes.size() - 1);
+		
+		this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 0,
+				screenMinY + HALF_ROW_HEIGHT, nodes, this, "inky"));
+		this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 5,
+				screenMinY + HALF_ROW_HEIGHT, nodes, this, "pinky"));
+		this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 10,
+				screenMinY + HALF_ROW_HEIGHT, nodes, this, "blinky"));
+		this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 15,
+				screenMinY + HALF_ROW_HEIGHT, nodes, this, "sue"));
+						
 	}
 	
 	private static double findDistance(Node from, Node to) {
@@ -129,7 +136,7 @@ public class MazeUniverse implements Universe, Graph {
 	}
 
 	public void setComplete(boolean complete) {
-		System.out.println(String.format("time = %3d.%03d; thread = %s; complete",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName()));					
+		System.out.println(String.format("time = %3d.%03d; thread = %s; universe complete",elapsedTime / 1000, elapsedTime % 1000,Thread.currentThread().getName()));					
 		for (DisplayableSprite sprite : sprites) {
 			sprite.setDispose(true);
 		}
@@ -160,18 +167,16 @@ public class MazeUniverse implements Universe, Graph {
 		
 		disposeSprites();
 		
-		goalNode = getGoalNode();
-		
-	}
-	
-	public Node getGoalNode() {
 		for (Node node : nodes) {
 			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
 					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
-				return node;
+				goalNode = node;
 			}
-		}
-		return nodes.get(nodes.size()-2);
+		}		
+	}
+	
+	public Node getGoalNode() {
+		return goalNode;
 	}
 	
 
