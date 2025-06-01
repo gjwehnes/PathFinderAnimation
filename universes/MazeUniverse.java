@@ -13,6 +13,7 @@ public class MazeUniverse implements Universe, Graph {
 	private boolean complete = false;
 	private long elapsedTime = 0;
 
+	private CollidingSprite player = null;
 	private ArrayList<DisplayableSprite> sprites = new ArrayList<DisplayableSprite>();
 	private ArrayList<Node> nodes = new ArrayList<Node>();
 	private Node goalNode = null;
@@ -103,7 +104,11 @@ public class MazeUniverse implements Universe, Graph {
 				screenMinY + HALF_ROW_HEIGHT, nodes, this, "blinky"));
 		this.sprites.add(new BlinkySprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 15,
 				screenMinY + HALF_ROW_HEIGHT, nodes, this, "sue"));
-						
+		
+		player = new CollidingSprite(screenMinX + HALF_COL_WIDTH + COL_WIDTH * 15,
+				screenMinY + HALF_ROW_HEIGHT + ROW_HEIGHT * 14);
+		
+		this.sprites.add(player);
 	}
 	
 	private static double findDistance(Node from, Node to) {
@@ -168,8 +173,8 @@ public class MazeUniverse implements Universe, Graph {
 		disposeSprites();
 		
 		for (Node node : nodes) {
-			if ((Math.abs(node.getCenterX() - MouseInput.logicalX  ) < 5)
-					&& (Math.abs(node.getCenterY() - MouseInput.logicalY) < 5)) {
+			if ((Math.abs(node.getCenterX() - player.getCenterX()) < HALF_COL_WIDTH)
+					&& (Math.abs(node.getCenterY() - player.getCenterY()) < HALF_ROW_HEIGHT)) {
 				goalNode = node;
 			}
 		}		
