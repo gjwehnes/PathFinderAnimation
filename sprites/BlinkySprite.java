@@ -198,8 +198,6 @@ public class BlinkySprite implements DisplayableSprite {
 	public void update(Universe universe, long actual_delta_time) {
 		
 		elapsedTime += actual_delta_time;
-
-		getGoalNode();
 		
 		//if blinky does not currently have a destination node, retrieve from path
 		if (nextNode == null) {
@@ -300,13 +298,14 @@ public class BlinkySprite implements DisplayableSprite {
 						Thread.yield();
 
 						try {
-							Thread.sleep(1);
+							Thread.sleep(100);
 						}
 						catch(Exception e) {    					
 						} 
 		        	}
 		        	
 					Node startNode = currentPath.size() > 0 ?  currentPath.getLast() : getNearestNode();
+					getGoalNode();
 					
 					if (startNode != goalNode) {
 						printLogEntry(String.format("start search:  %2s to %2s", startNode.toString(),goalNode.toString() ));
@@ -317,12 +316,16 @@ public class BlinkySprite implements DisplayableSprite {
 
 						printLogEntry("end search; next path = " + nextPath.toString());
 						nextPath = tempPath;
-					}					
+					}
+					else {
+						printLogEntry(String.format("current path size: %3d; next path size: %3d", currentPath.size(), nextPath.size()));
+					}
+					
+					if (universe != null && universe instanceof MazeUniverse) {
+						dispose = universe.isComplete();
+					}
 		        }
 				
-				if (universe != null && universe instanceof MazeUniverse) {
-					dispose = universe.isComplete();
-				}
 				printLogEntry("sprite complete");
 
 			}
